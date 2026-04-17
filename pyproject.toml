@@ -2,4 +2,8 @@
 name = "LuxDown"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pip>=26.0.1",
+    "pyside6>=6.11.0",
+    "yt-dlp>=2026.3.17",
+]
