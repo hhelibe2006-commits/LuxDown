@@ -1,6 +1,8 @@
+import sys
+
 import pytest
 from src.utils import is_url, text_to_dict
-from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QPlainTextEdit, QApplication
 
 
 def test_is_url():
@@ -21,4 +23,7 @@ def test_is_url():
 
 
 def test_text_to_dict():
-    pass
+    app = QApplication(sys.argv)
+    assert text_to_dict(QPlainTextEdit()) == []
+    assert text_to_dict(QPlainTextEdit("sdf\nsdvfj\nsdf")) == ["sdf", "sdvfj", "sdf"]
+
