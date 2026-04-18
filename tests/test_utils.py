@@ -1,5 +1,7 @@
 import pytest
-from src.utils import is_url
+from src.utils import is_url, text_to_dict
+from PySide6.QtWidgets import QPlainTextEdit
+
 
 def test_is_url():
     #测试谷歌链接
