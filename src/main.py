@@ -1,6 +1,6 @@
-from ui import *
+from ui import MainInterface
 def main():
-    MainInterface().initialize_ui()
+    MainInterface()
 
 if __name__ == '__main__':
     main()
