@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, \
-    QHeaderView, QTableWidgetItem, QTableView, QTableWidget
+     QTableWidget
 
 from utils import centered_ui, set_window_size, text_to_dict
 from .settings_interface import SettingsInterface
