@@ -1,14 +1,14 @@
-import sys
-from PySide6.QtWidgets import QMainWindow, QApplication, \
-    QPlainTextEdit, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, \
-    QTableWidget, QHeaderView
+from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, \
+    QHeaderView, QTableWidgetItem, QTableView, QTableWidget
+
+from utils import centered_ui, set_window_size, text_to_dict
 from .settings_interface import SettingsInterface
-from utils import centered_ui,set_window_size,text_to_dict
+
 
 class MainInterface(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.table_widget = QTableWidget(0,4)
+        self.table_widget = QTableWidget()
         self.plain_text_edit = QPlainTextEdit()
         self.parse_button = QPushButton("解析")
         self.download_button = QPushButton("下载")
@@ -34,8 +34,8 @@ class MainInterface(QMainWindow):
         setting_menu.triggered.connect(self.show_settings)
 
     def initialize_table_widget(self):
-        self.table_widget.setHorizontalHeaderLabels(["标题","时长","大小","链接"])
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.setColumnCount(5)
+        self.table_widget.setHorizontalHeaderLabels(["", "标题","时长","大小","链接"])
         self.vbox.addWidget(self.table_widget)
 
     def initialize_windows(self):
