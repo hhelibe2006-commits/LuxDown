@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, \
      QTableWidget
-
+from PySide6.QtCore import Slot
 from utils import centered_ui, set_window_size, text_to_dict
 from .settings_interface import SettingsInterface
 
@@ -46,6 +46,7 @@ class MainInterface(QMainWindow):
         self.main_widget.setLayout(self.vbox)
         self.show()
 
+    @Slot
     def on_parse_button_clicked(self):
         urls = text_to_dict(self.plain_text_edit)
 
