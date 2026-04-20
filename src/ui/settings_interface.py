@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QPushButton, QFileDialog, QGroupBox, QComboBox, QSizePolicy
-
+from PySide6.QtCore import Slot
 from utils import set_window_size, center_ui
 
 class SettingsInterface(QDialog):
@@ -59,6 +59,7 @@ class SettingsInterface(QDialog):
         hbox.addWidget(self.video_combobox)
         self.vbox.addLayout(hbox)
 
+    @Slot()
     def choose_dir(self):
         dir_path = QFileDialog.getExistingDirectory(self, "选择文件夹", self.path_input.text())
         if dir_path:
