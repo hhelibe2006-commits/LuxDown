@@ -46,7 +46,7 @@ class MainInterface(QMainWindow):
         self.main_widget.setLayout(self.vbox)
         self.show()
 
-    @Slot
+    @Slot()
     def on_parse_button_clicked(self):
         urls = text_to_dict(self.plain_text_edit)
 
