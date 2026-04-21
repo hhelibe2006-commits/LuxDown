@@ -1,1 +1,1 @@
-from .main_interface import MainInterface
+from .main_interface import MainInterface as MainInterface

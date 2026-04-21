@@ -1,8 +1,15 @@
+"""
+朱函数入口模块
+"""
 import sys
+# pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QApplication
-from ui import MainInterface
+from src.ui import MainInterface
 
 def main():
+    """
+    主函数
+    """
     app=QApplication(sys.argv)
     windows=MainInterface()
     windows.initialize()
