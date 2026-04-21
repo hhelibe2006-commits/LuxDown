@@ -16,20 +16,20 @@ class SettingsInterface(QDialog):
         self.initialize()
 
     def initialize(self):
-        self.initialize_path()
-        self.initialize_download_content()
-        self.initialize_format()
-        self.initialize_windows()
+        self.__initialize_path()
+        self.__initialize_download_content()
+        self.__initialize_format()
+        self.__initialize_windows()
 
-    def initialize_windows(self):
+    def __initialize_windows(self):
         self.setWindowTitle("设置")
         set_window_size(self, percentage = 0.6)
         center_ui(self)
         self.vbox.addStretch()
 
-    def initialize_path(self):
+    def __initialize_path(self):
         self.path_input.setPlaceholderText("下载路径")
-        self.path_button.clicked.connect(self.choose_dir)
+        self.path_button.clicked.connect(self.__choose_dir)
         self.path_input.setText("C:\\Users\\hhhhh\\Downloads")
         hbox = QHBoxLayout()
         hbox.addWidget(self.path_input)
@@ -37,7 +37,7 @@ class SettingsInterface(QDialog):
         self.vbox.addWidget(QLabel("下载路径:"))
         self.vbox.addLayout(hbox)
 
-    def initialize_download_content(self):
+    def __initialize_download_content(self):
         self.audio_box.setCheckable(True)
         self.video_box.setCheckable(True)
         hbox = QHBoxLayout()
@@ -46,11 +46,11 @@ class SettingsInterface(QDialog):
         self.vbox.addWidget(QLabel("下载内容:"))
         self.vbox.addLayout(hbox)
 
-    def initialize_format(self):
+    def __initialize_format(self):
         self.audio_combobox.addItems(["mp3"])
         self.video_combobox.addItems(["mp4"])
-        self.audio_combobox.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.video_combobox.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.video_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.vbox.addWidget(QLabel("格式选择"))
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("音频:"))
@@ -60,7 +60,7 @@ class SettingsInterface(QDialog):
         self.vbox.addLayout(hbox)
 
     @Slot()
-    def choose_dir(self):
+    def __choose_dir(self):
         dir_path = QFileDialog.getExistingDirectory(self, "选择文件夹", self.path_input.text())
         if dir_path:
             self.path_input.setText(dir_path)

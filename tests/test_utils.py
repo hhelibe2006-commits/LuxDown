@@ -1,6 +1,4 @@
 import sys
-
-import pytest
 from src.utils import is_url, text_to_dict
 from PySide6.QtWidgets import QPlainTextEdit, QApplication
 
