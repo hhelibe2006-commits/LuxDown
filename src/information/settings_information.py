@@ -1,6 +1,12 @@
+"""
+该文件存放调用json进行设置存储的函数与类
+"""
 import json
 from pathlib import Path
 class SettingsInformation:
+    """
+    该类用于设置文件的创建与改查
+    """
     def __init__(self):
         self.path_input = str(Path.home()/"Downloads")
         self.audio = ["mp3", "m4a", "acc", "wav", "ogg", "flac"]

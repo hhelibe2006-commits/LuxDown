@@ -1,6 +1,8 @@
+"""
+该文件存放界面位置设置的函数
+"""
+# pylint: disable=no-name-in-module
 from PySide6 import QtGui
-from PySide6.QtWidgets import QMainWindow, QApplication
-from PySide6.QtGui import QScreen
 
 def center_ui(window):
     #获取屏幕中心点

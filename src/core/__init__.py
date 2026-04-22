@@ -1,2 +1,5 @@
-from .downloader import Downloader as Downloader
-from .parser import parse as parse
+"""
+声明core为包，并简化导入
+"""
+from .downloader import Downloader
+from .parser import parse

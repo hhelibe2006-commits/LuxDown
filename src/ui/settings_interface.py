@@ -1,10 +1,18 @@
+"""
+该文件存储设置界面类
+"""
+# pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QPushButton, QFileDialog, QGroupBox, QComboBox, QSizePolicy
+# pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
-from utils import set_window_size, center_ui
-from information import SettingsInformation
+from src.utils import set_window_size, center_ui
+from src.information import SettingsInformation
 
 class SettingsInterface(QDialog):
+    """
+    该类为设置界面类
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.vbox = QVBoxLayout(self)
