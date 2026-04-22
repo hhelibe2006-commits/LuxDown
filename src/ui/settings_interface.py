@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QPushButton, QFileDialog, QGroupBox, QComboBox, QSizePolicy
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from utils import set_window_size, center_ui
+from information import SettingsInformation
 
 class SettingsInterface(QDialog):
     def __init__(self, parent=None):
@@ -13,6 +14,9 @@ class SettingsInterface(QDialog):
         self.audio_combobox = QComboBox()
         self.video_combobox = QComboBox()
         self.path_button = QPushButton("选择路径")
+        self.apply_button = QPushButton("确认")
+        self.cancel_button = QPushButton("取消")
+        self.settings_information = SettingsInformation()
         self.initialize()
 
     def initialize(self):
@@ -20,6 +24,16 @@ class SettingsInterface(QDialog):
         self.__initialize_download_content()
         self.__initialize_format()
         self.__initialize_windows()
+        self.__initialize_buttons()
+
+    def __initialize_buttons(self):
+        self.apply_button.clicked.connect(self.__on_apply_button)
+        self.cancel_button.clicked.connect(self.close)
+        hbox = QHBoxLayout()
+        hbox.addStretch()
+        hbox.addWidget(self.apply_button)
+        hbox.addWidget(self.cancel_button)
+        self.vbox.addLayout(hbox)
 
     def __initialize_windows(self):
         self.setWindowTitle("设置")
@@ -30,7 +44,7 @@ class SettingsInterface(QDialog):
     def __initialize_path(self):
         self.path_input.setPlaceholderText("下载路径")
         self.path_button.clicked.connect(self.__choose_dir)
-        self.path_input.setText("C:\\Users\\hhhhh\\Downloads")
+        self.path_input.setText(self.settings_information.path_input)
         hbox = QHBoxLayout()
         hbox.addWidget(self.path_input)
         hbox.addWidget(self.path_button)
@@ -40,6 +54,8 @@ class SettingsInterface(QDialog):
     def __initialize_download_content(self):
         self.audio_box.setCheckable(True)
         self.video_box.setCheckable(True)
+        self.audio_box.setChecked(self.settings_information.on_audio)
+        self.video_box.setChecked(self.settings_information.on_video)
         hbox = QHBoxLayout()
         hbox.addWidget(self.audio_box)
         hbox.addWidget(self.video_box)
@@ -47,8 +63,10 @@ class SettingsInterface(QDialog):
         self.vbox.addLayout(hbox)
 
     def __initialize_format(self):
-        self.audio_combobox.addItems(["mp3"])
-        self.video_combobox.addItems(["mp4"])
+        self.audio_combobox.addItems(self.settings_information.audio)
+        self.video_combobox.addItems(self.settings_information.video)
+        self.audio_combobox.setCurrentText(self.settings_information.audio1)
+        self.video_combobox.setCurrentText(self.settings_information.video1)
         self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.video_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.vbox.addWidget(QLabel("格式选择"))
@@ -65,3 +83,24 @@ class SettingsInterface(QDialog):
         if dir_path:
             self.path_input.setText(dir_path)
 
+    @Slot()
+    def __on_apply_button(self):
+        dict_settings = {
+            "path_input": self.path_input.text(),
+            "audio": self.audio_combobox.currentText(),
+            "video": self.video_combobox.currentText(),
+            "on_audio": self.audio_box.isChecked(),
+            "on_video": self.video_box.isChecked(),
+        }
+        revise=self.ReviseSettings(self.settings_information.revise_settings,dict_settings)
+        QThreadPool.globalInstance().start(revise)
+        self.close()
+
+    class ReviseSettings(QRunnable):
+        def __init__(self, settings_info, data):
+            super().__init__()
+            self.settings_info = settings_info
+            self.data = data
+
+        def run(self):
+            self.settings_info(self.data)
