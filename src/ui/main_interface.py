@@ -1,10 +1,19 @@
-from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+"""
+该文件存放主界面的类
+"""
+# pylint: disable=no-name-in-module
+from PySide6.QtWidgets import QMainWindow, QPlainTextEdit,\
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+# pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
-from utils import centered_ui, set_window_size, text_to_dict, is_url
+from src.utils import centered_ui, set_window_size, text_to_dict, is_url
 from .settings_interface import SettingsInterface
-from core import parse
+from src.core import parse
 
 class MainInterface(QMainWindow):
+    """
+    该类为主界面类
+    """
     def __init__(self):
         super().__init__()
         self.plain_text_edit = QPlainTextEdit()
@@ -41,6 +50,7 @@ class MainInterface(QMainWindow):
         for url in urls:
             if is_url(url):
                 parsed = parse(url)
+                print(parsed)
             else:
                 pass
 

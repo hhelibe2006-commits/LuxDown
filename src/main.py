@@ -11,6 +11,7 @@ from src.ui import MainInterface
 def main():
     """
     主函数
+    进行主界面的创建与显示，并指定应用图标
     """
     app=QApplication(sys.argv)
     windows=MainInterface()
@@ -19,4 +20,7 @@ def main():
     sys.exit(app.exec())
 
 if __name__ == '__main__':
+    """
+    当该文件被直接运行时运行main()
+    """
     main()
