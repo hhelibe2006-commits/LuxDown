@@ -26,7 +26,12 @@ class MainInterface(QMainWindow):
     def initialize(self):
         self.__initialize_parsing_box()
         self.__initialize_menu_bar()
+        self.__initialize_help_menu_bar()
         self.__initialize_windows()
+
+    def __initialize_help_menu_bar(self):
+        help_menu = self.menu_bar.addMenu("帮助")
+        
 
     def __initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText("请输入链接")
