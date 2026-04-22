@@ -12,6 +12,7 @@ class MainInterface(QMainWindow):
         self.main_widget = QWidget()
         self.vbox = QVBoxLayout()
         self.menu_bar = self.menuBar()
+        self.settings = SettingsInterface(self)
 
     def initialize(self):
         self.__initialize_parsing_box()
@@ -25,7 +26,7 @@ class MainInterface(QMainWindow):
 
     def __initialize_menu_bar(self):
         setting_menu = self.menu_bar.addAction("设置")
-        setting_menu.triggered.connect(self.show_settings)
+        setting_menu.triggered.connect(self.settings.exec)
 
     def __initialize_windows(self):
         self.setWindowTitle("LuxDown")
@@ -42,10 +43,6 @@ class MainInterface(QMainWindow):
                 parsed = parse(url)
             else:
                 pass
-
-    def show_settings(self):
-        settings = SettingsInterface(self)
-        settings.exec_()
 
     def setup_input_layout(self):
         self.setCentralWidget(self.main_widget)
