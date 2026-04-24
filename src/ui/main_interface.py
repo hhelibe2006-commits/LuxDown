@@ -9,6 +9,7 @@ from PySide6.QtCore import Slot
 from src.utils import centered_ui, set_window_size, text_to_dict, is_url
 from .settings_interface import SettingsInterface
 from src.core import parse
+from .parser_interface import ParsyParser
 
 class MainInterface(QMainWindow):
     """
@@ -55,7 +56,9 @@ class MainInterface(QMainWindow):
         for url in urls:
             if is_url(url):
                 parsed = parse(url)
-                print(parsed)
+                windows = ParsyParser(parsed)
+                windows.initialize()
+                windows.show()
             else:
                 pass
 
