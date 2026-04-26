@@ -1,15 +1,19 @@
 """
 该文件存放主界面的类
 """
+from concurrent.futures import ThreadPoolExecutor
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit,\
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout
 # pylint: disable=no-name-in-module
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, Signal, QObject
 from src.utils import centered_ui, set_window_size, text_to_dict, is_url
-from .settings_interface import SettingsInterface
+from ui.settings_interface import SettingsInterface
 from src.core import parse
-from .parser_interface import ParsyParser
+from ui.parser_interface import ParsyParser
+
+class cc(QObject):
+    signal1 = Signal(tuple)
 
 class MainInterface(QMainWindow):
     """
@@ -23,6 +27,9 @@ class MainInterface(QMainWindow):
         self.vbox = QVBoxLayout()
         self.menu_bar = self.menuBar()
         self.settings = SettingsInterface(self)
+        self.executor = ThreadPoolExecutor()
+        self.signal = cc()
+        self.signal.signal1.connect(self.windows)
 
     def initialize(self):
         self.__initialize_parsing_box()
@@ -32,7 +39,9 @@ class MainInterface(QMainWindow):
 
     def __initialize_help_menu_bar(self):
         help_menu = self.menu_bar.addMenu("帮助")
-        
+        help_menu.addAction("检查更新")
+        help_menu.addAction("关于")
+        help_menu.addAction("帮助")
 
     def __initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText("请输入链接")
@@ -55,12 +64,19 @@ class MainInterface(QMainWindow):
         urls = text_to_dict(self.plain_text_edit)
         for url in urls:
             if is_url(url):
-                parsed = parse(url)
-                windows = ParsyParser(parsed)
-                windows.initialize()
-                windows.show()
+                self.executor.submit(self.__cc, url)
             else:
                 pass
+
+    def __cc(self, url):
+        parsed = parse(url)
+        print(parsed)
+        self.signal.signal1.emit(parsed)
+
+    def windows(self, parsed):
+        parsy_parser = ParsyParser(parsed)
+        parsy_parser.initialize()
+        parsy_parser.exec()
 
     def setup_input_layout(self):
         self.setCentralWidget(self.main_widget)
