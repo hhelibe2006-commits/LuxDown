@@ -14,6 +14,7 @@ def main():
     进行主界面的创建与显示，并指定应用图标
     """
     app=QApplication(sys.argv)
+    app.setStyle('Fusion')
     windows=MainInterface()
     windows.setWindowIcon(QIcon("LuxDown.png"))
     windows.initialize()
