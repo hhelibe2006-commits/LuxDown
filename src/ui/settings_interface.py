@@ -3,7 +3,7 @@
 """
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
-    QPushButton, QFileDialog, QGroupBox, QComboBox, QSizePolicy
+    QPushButton, QFileDialog, QGroupBox, QComboBox, QSizePolicy, QCheckBox
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from src.utils import set_window_size, center_ui
@@ -17,8 +17,8 @@ class SettingsInterface(QDialog):
         super().__init__(parent)
         self.vbox = QVBoxLayout(self)
         self.path_input = QLineEdit()
-        self.audio_box = QGroupBox("音频")
-        self.video_box = QGroupBox("视频")
+        self.audio_box = QCheckBox("音频")
+        self.video_box = QCheckBox("视频")
         self.audio_combobox = QComboBox()
         self.video_combobox = QComboBox()
         self.path_button = QPushButton("选择路径")
