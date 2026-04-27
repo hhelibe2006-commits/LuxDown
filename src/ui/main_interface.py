@@ -11,9 +11,12 @@ from src.utils import centered_ui, set_window_size, text_to_dict, is_url
 from ui.settings_interface import SettingsInterface
 from src.core import parse
 from ui.parser_interface import ParsyParser
+from core import download
 
 class cc(QObject):
     signal1 = Signal(tuple)
+    closed = Signal(object)
+    download_signal = Signal(str)
 
 class MainInterface(QMainWindow):
     """
@@ -28,8 +31,10 @@ class MainInterface(QMainWindow):
         self.menu_bar = self.menuBar()
         self.settings = SettingsInterface(self)
         self.executor = ThreadPoolExecutor()
+        self.download_executor = ThreadPoolExecutor()
         self.signal = cc()
         self.signal.signal1.connect(self.windows)
+        self.signal.closed.connect(self.download_url)
 
     def initialize(self):
         self.__initialize_parsing_box()
@@ -74,7 +79,7 @@ class MainInterface(QMainWindow):
         self.signal.signal1.emit(parsed)
 
     def windows(self, parsed):
-        parsy_parser = ParsyParser(parsed)
+        parsy_parser = ParsyParser(parsed, self.signal)
         parsy_parser.initialize()
         parsy_parser.exec()
 
@@ -84,3 +89,13 @@ class MainInterface(QMainWindow):
         self.vbox.addLayout(hbox)
         hbox.addWidget(self.plain_text_edit)
         hbox.addWidget(self.parse_button)
+
+    def hook(self, d):
+        print(d)
+        if d['status'] == 'downloading':
+            print(d)
+
+    def download_url(self, urls):
+        print(urls)
+        for i,url in urls.items():
+            self.download_executor.submit(download, url, self.hook)
