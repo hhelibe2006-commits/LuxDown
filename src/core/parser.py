@@ -18,4 +18,4 @@ def parse(url):
                 llist.append({j:k for j,k in i.items() if j in clist})
         else:
             llist.append({j:k for j,k in info.items() if j in clist})
-        return llist,info.get('title'),info.get('thumbnail')
+        return llist,info.get("description"), info.get('title'), info.get('thumbnail')
