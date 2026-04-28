@@ -4,7 +4,7 @@
 from concurrent.futures import ThreadPoolExecutor
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit,\
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
 from src.utils import centered_ui, set_window_size, text_to_dict, is_url
@@ -93,7 +93,7 @@ class MainInterface(QMainWindow):
     def hook(self, d):
         print(d)
         if d['status'] == 'downloading':
-            print(d)
+            self.signal.download_signal.emit(d.get('_default_template'))
 
     def download_url(self, urls):
         print(urls)
