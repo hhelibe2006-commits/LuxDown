@@ -4,7 +4,7 @@
 import yt_dlp
 def download(url, hook):
     ydl_opts = {
-        "outtmpl": "C:\\Users\\hhhhh\\Downloads\\%(title)s.%(ext)",
+        "outtmpl": "C:\\Users\\hhhhh\\Downloads\\%(title)s.%(ext)s",
         'progress_hooks': [hook]}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
