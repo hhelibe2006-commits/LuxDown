@@ -4,7 +4,10 @@
 from typing import Any
 from yt_dlp import YoutubeDL
 def parse(url):
-    with YoutubeDL() as ydl:
+    ydl_opts = {
+        'max_sleep_interval': 30,
+                }
+    with YoutubeDL(ydl_opts) as ydl:
         info:Any = ydl.extract_info(url, download=False)
         if not info:
             return []
