@@ -66,6 +66,7 @@ class ParsyParser(QDialog):
     @Slot()
     def download(self):
         urls = {i:self.tableWidget.cellWidget(i,3).text() for i in range(self.tableWidget.rowCount()) if self.tableWidget.cellWidget(i, 0).isChecked()}
-        self.signal.closed.emit(urls)
+        title = {i:self.tableWidget.cellWidget(i,1).text() for i in range(self.tableWidget.rowCount()) if self.tableWidget.cellWidget(i, 0).isChecked()}
+        self.signal.closed.emit(title, urls)
         self.close()
 
