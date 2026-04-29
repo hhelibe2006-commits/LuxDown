@@ -22,7 +22,7 @@ class SettingsInterface(QDialog):
         self.audio_combobox = QComboBox()
         self.video_combobox = QComboBox()
         self.path_button = QPushButton("选择路径")
-        self.apply_button = QPushButton("确认")
+        self.apply_button = QPushButton("保存")
         self.cancel_button = QPushButton("取消")
         self.settings_information = SettingsInformation()
         self.initialize()
@@ -33,6 +33,15 @@ class SettingsInterface(QDialog):
         self.__initialize_format()
         self.__initialize_windows()
         self.__initialize_buttons()
+
+    def synchronous(self):
+        self.path_input.setText(self.settings_information.path_input)
+
+        self.audio_box.setChecked(self.settings_information.on_audio)
+        self.video_box.setChecked(self.settings_information.on_video)
+
+        self.audio_combobox.setCurrentText(self.settings_information.audio1)
+        self.video_combobox.setCurrentText(self.settings_information.video1)
 
     def __initialize_buttons(self):
         self.apply_button.clicked.connect(self.__on_apply_button)
