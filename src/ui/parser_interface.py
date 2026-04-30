@@ -5,42 +5,42 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from utils import set_window_size, center_ui
 
 
-class ParsyParser(QDialog):
-    def __init__(self, parent:tuple, signal):
+class DownloadDialog(QDialog):
+    def __init__(self, parse_result:tuple, notifier):
         super().__init__()
-        self.title = parent[-2]
-        self.signal = signal
-        self.verticalLayout_2 = QVBoxLayout(self)
-        self.horizontalLayout = QHBoxLayout()
+        self.title = parse_result[-2]
+        self.notifier = notifier
+        self.main_layout = QVBoxLayout(self)
+        self.top_area_layout = QHBoxLayout()
 
         self.webEngineView = QWebEngineView()
-        self.webEngineView.setUrl(QUrl(parent[-1]))
-        self.horizontalLayout.addWidget(self.webEngineView)
+        self.webEngineView.setUrl(QUrl(parse_result[-1]))
+        self.top_area_layout.addWidget(self.webEngineView)
 
-        self.verticalLayout = QVBoxLayout()
-        self.lineEdit = QLabel(parent[-2])
-        self.verticalLayout.addWidget(self.lineEdit)
+        self.right_panel_layout = QVBoxLayout()
+        self.title_label = QLabel(parse_result[-2])
+        self.right_panel_layout.addWidget(self.title_label)
 
-        self.textEdit = QTextBrowser()
-        self.textEdit.setPlainText(parent[-3])
-        self.verticalLayout.addWidget(self.textEdit)
+        self.description_browser = QTextBrowser()
+        self.description_browser.setPlainText(parse_result[-3])
+        self.right_panel_layout.addWidget(self.description_browser)
 
-        self.horizontalLayout.addLayout(self.verticalLayout)
-        self.horizontalLayout.setStretch(0, 1)
-        self.horizontalLayout.setStretch(1, 2)
+        self.top_area_layout.addLayout(self.right_panel_layout)
+        self.top_area_layout.setStretch(0, 1)
+        self.top_area_layout.setStretch(1, 2)
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.main_layout.addLayout(self.top_area_layout)
 
-        self.tableWidget = QTableWidget(len(parent[0]), 4)
-        self.tableWidget.setHorizontalHeaderLabels(['','标题','时长','链接'])
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        for i in range(len(parent[0])):
-            self.tableWidget.setCellWidget(i, 0, QCheckBox())
-            self.tableWidget.setCellWidget(i, 1, QLabel(parent[0][i].get('title')))
-            self.tableWidget.setCellWidget(i, 2, QLabel(parent[0][i].get('duration_string')))
-            self.tableWidget.setCellWidget(i, 3, QLabel(parent[0][i].get('webpage_url')))
+        self.video_table = QTableWidget(len(parse_result[0]), 4)
+        self.video_table.setHorizontalHeaderLabels(['', '标题', '时长', '链接'])
+        self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for row in range(len(parse_result[0])):
+            self.video_table.setCellWidget(row, 0, QCheckBox())
+            self.video_table.setCellWidget(row, 1, QLabel(parse_result[0][row].get('title')))
+            self.video_table.setCellWidget(row, 2, QLabel(parse_result[0][row].get('duration_string')))
+            self.video_table.setCellWidget(row, 3, QLabel(parse_result[0][row].get('webpage_url')))
 
-        self.verticalLayout_2.addWidget(self.tableWidget)
+        self.main_layout.addWidget(self.video_table)
 
         hbox = QHBoxLayout()
         hbox.addStretch()
@@ -51,22 +51,22 @@ class ParsyParser(QDialog):
         hbox.addWidget(self.apply_button)
         hbox.addWidget(self.cancel_button)
 
-        self.verticalLayout_2.addLayout(hbox)
-        self.verticalLayout_2.setStretch(0, 1)
-        self.verticalLayout_2.setStretch(1, 2)
+        self.main_layout.addLayout(hbox)
+        self.main_layout.setStretch(0, 1)
+        self.main_layout.setStretch(1, 2)
 
     def initialize(self):
-        self.__initialize_windows()
+        self._initialize_window()
 
-    def __initialize_windows(self):
+    def _initialize_window(self):
         self.setWindowTitle("下载")
         set_window_size(self, 0.8)
         center_ui(self)
 
     @Slot()
     def download(self):
-        urls = {i:self.tableWidget.cellWidget(i,3).text() for i in range(self.tableWidget.rowCount()) if self.tableWidget.cellWidget(i, 0).isChecked()}
-        title = {i:self.tableWidget.cellWidget(i,1).text() for i in range(self.tableWidget.rowCount()) if self.tableWidget.cellWidget(i, 0).isChecked()}
-        self.signal.closed.emit(title, urls)
+        urls = {i:self.video_table.cellWidget(i, 3).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
+        title = {i:self.video_table.cellWidget(i, 1).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
+        self.notifier.download_start.emit(title, urls)
         self.close()
 

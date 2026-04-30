@@ -6,22 +6,22 @@ import yt_dlp
 
 def download(url, progress_hook, index, settings):
     ydl_opts = {
-        "outtmpl": f"{settings.path_input}\\{index}-%(title)s.%(ext)s",
+        "outtmpl": f"{settings.default_download_dir}\\{index}-%(title)s.%(ext)s",
         'progress_hooks': [progress_hook],
         'max_sleep_interval': 30,
         #'quiet': True,
         #'no_color': True,
     }
-    if settings.on_audio and settings.on_video:
+    if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
-        ydl_opts['merge_output_format'] = settings.video1
+        ydl_opts['merge_output_format'] = settings.current_video_format
 
-    elif settings.on_audio:
+    elif settings.download_audio:
         ydl_opts['format'] = 'bestaudio/best'
-        ydl_opts['merge_output_format'] = settings.audio1
-    elif settings.on_video:
+        ydl_opts['merge_output_format'] = settings.current_audio_format
+    elif settings.download_video:
         ydl_opts['format'] = 'bestvideo'
-        ydl_opts['merge_output_format'] = settings.video1
+        ydl_opts['merge_output_format'] = settings.current_video_format
     else:
         ydl_opts['format'] = ''
 

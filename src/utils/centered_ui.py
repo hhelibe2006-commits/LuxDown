@@ -5,7 +5,7 @@
 from PySide6 import QtGui
 
 def center_ui(window):
-    #获取屏幕中心点
+    #获取屏幕可用区域
     screen = QtGui.QGuiApplication.primaryScreen().availableGeometry()
     #获取窗口大小
     size = window.geometry()
