@@ -8,25 +8,25 @@ from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QListWidget, QLabel, QListWidgetItem
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
-from src.utils import centered_ui, set_window_size, text_to_dict, is_url
+from src.utils import centered_ui, set_window_size, text_to_list, is_url
 from ui.settings_interface import SettingsInterface
-from src.core import parse
-from ui.parser_interface import ParsyParser
+from src.core import extract_info
+from ui.parser_interface import DownloadDialog
 from core import download
 
-class cc(QObject):
-    signal1 = Signal(tuple)
-    closed = Signal(object, object)
-    download_signal = Signal(object)
-    delete = Signal(object)
+class SignalEmitter(QObject):
+    parse_finished = Signal(tuple)
+    download_start = Signal(object, object)
+    progress_update = Signal(object)
+    download_finished = Signal(object)
 
-class ListWidget(QWidget):
+class DownloadTaskWidget(QWidget):
     def __init__(self, signal, title):
         super().__init__()
-        self.l = None
-        self.e = False
-        self.signal = signal
-        self.my_signal = cc()
+        self.list_item = None
+        self.is_cancelled = False
+        self.external_emitter = signal
+        self.emitter = SignalEmitter()
         self.hbox = QHBoxLayout()
         self.label = QLabel(title)
         self.hbox.addWidget(self.label)
@@ -36,24 +36,25 @@ class ListWidget(QWidget):
         self.button = QPushButton("取消")
         self.hbox.addWidget(self.button)
         self.setLayout(self.hbox)
-        self.button.clicked.connect(self.on_button)
-        self.my_signal.download_signal.connect(self.up)
+        self.button.clicked.connect(self.on_cancel_clicked)
+        self.emitter.progress_update.connect(self.update_progress)
         self.executor = ThreadPoolExecutor(max_workers=1)
 
-    def on_button(self):
-        self.e = True
-        self.signal.delete.emit(self.l)
+    @Slot()
+    def on_cancel_clicked(self):
+        self.is_cancelled = True
+        self.external_emitter.download_finished.emit(self.list_item)
 
-    def up(self, value):
+    def update_progress(self, value):
         self.progress_bar.setValue(value)
 
-    def hook(self, d):
-        if self.e:
+    def progress_hook(self, d):
+        if self.is_cancelled:
             raise
         if d['status'] == 'downloading':
-            self.executor.submit(self.my_signal.download_signal.emit, d.get('_percent'))
+            self.executor.submit(self.emitter.progress_update.emit, d.get('_percent'))
         elif d['status'] == 'finished':
-            self.signal.delete.emit(self.l)
+            self.external_emitter.download_finished.emit(self.list_item)
 
 class MainInterface(QMainWindow):
     """
@@ -64,22 +65,22 @@ class MainInterface(QMainWindow):
         self.plain_text_edit = QPlainTextEdit()
         self.parse_button = QPushButton("解析")
         self.main_widget = QWidget()
-        self.vbox = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
         self.menu_bar = self.menuBar()
-        self.settings = SettingsInterface(self)
+        self.settings_dialog = SettingsInterface(self)
         self.list_widget = QListWidget()
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.download_executor = ThreadPoolExecutor()
-        self.signal = cc()
-        self.signal.signal1.connect(self.windows)
-        self.signal.closed.connect(self.download_url)
-        self.signal.delete.connect(self.delete)
+        self.emitter = SignalEmitter()
+        self.emitter.parse_finished.connect(self.on_parse_finished)
+        self.emitter.download_start.connect(self.start_download)
+        self.emitter.download_finished.connect(self.remove_task_item)
 
     def initialize(self):
         self.__initialize_parsing_box()
         self.__initialize_menu_bar()
         self.__initialize_help_menu_bar()
-        self.vbox.addWidget(self.list_widget)
+        self.main_layout.addWidget(self.list_widget)
         self.__initialize_windows()
 
     def __initialize_help_menu_bar(self):
@@ -99,52 +100,52 @@ class MainInterface(QMainWindow):
 
     def __initialize_windows(self):
         self.setWindowTitle("LuxDown")
-        set_window_size(self, percentage = 0.8)
+        set_window_size(self, ratio= 0.8)
         centered_ui.center_ui(self)
-        self.main_widget.setLayout(self.vbox)
+        self.main_widget.setLayout(self.main_layout)
         self.show()
 
     @Slot()
     def on_settings(self):
-        self.settings.exec()
-        self.settings.synchronous()
+        self.settings_dialog.exec()
+        self.settings_dialog.synchronous()
 
     @Slot()
     def on_parse_button_clicked(self):
-        urls = text_to_dict(self.plain_text_edit)
+        urls = text_to_list(self.plain_text_edit)
         for url in urls:
             if is_url(url):
-                self.executor.submit(self.__cc, url)
+                self.executor.submit(self._parse_url_in_thread, url)
             else:
                 pass
 
-    def __cc(self, url):
-        parsed = parse(url)
+    def _parse_url_in_thread(self, url):
+        parsed = extract_info(url)
         print(parsed)
-        self.signal.signal1.emit(parsed)
+        self.emitter.parse_finished.emit(parsed)
 
-    def windows(self, parsed):
-        parsy_parser = ParsyParser(parsed, self.signal)
-        parsy_parser.initialize()
-        parsy_parser.exec()
+    def on_parse_finished(self, parsed):
+        download_dialog = DownloadDialog(parsed, self.emitter)
+        download_dialog.initialize()
+        download_dialog.exec()
 
     def setup_input_layout(self):
         self.setCentralWidget(self.main_widget)
         hbox = QHBoxLayout()
-        self.vbox.addLayout(hbox)
+        self.main_layout.addLayout(hbox)
         hbox.addWidget(self.plain_text_edit)
         hbox.addWidget(self.parse_button)
 
-    def download_url(self, titles, urls):
-        for i in urls.keys() & titles.keys():
-            a = QListWidgetItem(self.list_widget)
-            l = ListWidget(self.signal, titles[i])
-            l.l=a
-            a.setSizeHint(l.sizeHint())
-            self.list_widget.setItemWidget(a,l)
-            self.download_executor.submit(download, urls[i], l.hook, i, self.settings.settings_information)
+    def start_download(self, titles, urls):
+        for index in urls.keys() & titles.keys():
+            list_item = QListWidgetItem(self.list_widget)
+            task_widget = DownloadTaskWidget(self.emitter, titles[index])
+            task_widget.list_item=list_item
+            list_item.setSizeHint(task_widget.sizeHint())
+            self.list_widget.setItemWidget(list_item,task_widget)
+            self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information)
 
-    def delete(self,widget):
+    def remove_task_item(self, widget):
         row = self.list_widget.row(widget)
         delete = self.list_widget.takeItem(row)
         del delete

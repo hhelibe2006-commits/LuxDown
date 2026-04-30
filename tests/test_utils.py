@@ -1,5 +1,5 @@
 import sys
-from src.utils import is_url, text_to_dict
+from src.utils import is_url, text_to_list
 from PySide6.QtWidgets import QPlainTextEdit, QApplication
 
 
@@ -22,6 +22,6 @@ def test_is_url():
 
 def test_text_to_dict():
     app = QApplication(sys.argv)
-    assert text_to_dict(QPlainTextEdit()) == []
-    assert text_to_dict(QPlainTextEdit("sdf\nsdvfj\nsdf")) == ["sdf", "sdvfj", "sdf"]
+    assert text_to_list(QPlainTextEdit()) == []
+    assert text_to_list(QPlainTextEdit("sdf\nsdvfj\nsdf")) == ["sdf", "sdvfj", "sdf"]
 
