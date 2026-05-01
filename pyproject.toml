@@ -8,4 +8,5 @@ dependencies = [
     "pip==26.1",
     "pyside6>=6.11.0",
     "yt-dlp>=2026.3.17",
+    "yt-dlp-ejs>=0.8.0",
 ]
