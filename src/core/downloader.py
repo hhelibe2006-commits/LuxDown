@@ -9,8 +9,13 @@ def download(url, progress_hook, index, settings):
         "outtmpl": f"{settings.default_download_dir}\\{index}-%(title)s.%(ext)s",
         'progress_hooks': [progress_hook],
         'max_sleep_interval': 30,
-        #'quiet': True,
-        #'no_color': True,
+        'external_downloader': 'aria2c',
+        'external_downloader_args': [
+            '--min-split-size=1M',
+            '--max-connection-per-server=16',
+            '--split=16',
+            '--max-overall-download-limit=0'
+        ],
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
