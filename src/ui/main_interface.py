@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar,\
-    QListWidget, QLabel, QListWidgetItem
+    QListWidget, QLabel, QListWidgetItem, QTextEdit
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
 from src.utils import centered_ui, set_window_size, text_to_list, is_url
@@ -13,6 +13,21 @@ from ui.settings_interface import SettingsInterface
 from src.core import extract_info
 from ui.parser_interface import DownloadDialog
 from core import download
+
+class MyLogger(QObject):
+    log_signal = Signal(str)
+
+    def debug(self, msg):
+        self.log_signal.emit(msg)
+
+    def warning(self, msg):
+        self.log_signal.emit(msg)
+
+    def error(self, msg):
+        self.log_signal.emit(f'<span style="color: red;">{msg}<</span>')
+
+    def info(self, msg):
+        self.log_signal.emit(msg)
 
 class SignalEmitter(QObject):
     parse_finished = Signal(tuple)
@@ -62,8 +77,10 @@ class MainInterface(QMainWindow):
     """
     def __init__(self):
         super().__init__()
+        self.text_edit = QTextEdit()
         self.plain_text_edit = QPlainTextEdit()
         self.parse_button = QPushButton("解析")
+        self.logger = MyLogger()
         self.main_widget = QWidget()
         self.main_layout = QVBoxLayout()
         self.menu_bar = self.menuBar()
@@ -75,35 +92,40 @@ class MainInterface(QMainWindow):
         self.emitter.parse_finished.connect(self.on_parse_finished)
         self.emitter.download_start.connect(self.start_download)
         self.emitter.download_finished.connect(self.remove_task_item)
+        self.logger.log_signal.connect(self.text_add)
 
     def initialize(self):
-        self.__initialize_parsing_box()
-        self.__initialize_menu_bar()
-        self.__initialize_help_menu_bar()
+        self._initialize_parsing_box()
+        self._initialize_menu_bar()
+        self._initialize_help_menu_bar()
         self.main_layout.addWidget(self.list_widget)
-        self.__initialize_windows()
+        self._initialize_windows()
 
-    def __initialize_help_menu_bar(self):
+    def _initialize_help_menu_bar(self):
         help_menu = self.menu_bar.addMenu("帮助")
         help_menu.addAction("检查更新")
         help_menu.addAction("关于")
         help_menu.addAction("帮助")
 
-    def __initialize_parsing_box(self):
+    def _initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText("请输入链接")
+        self.text_edit.setReadOnly(True)
         self.parse_button.clicked.connect(self.on_parse_button_clicked)
         self.setup_input_layout()
 
-    def __initialize_menu_bar(self):
+    def _initialize_menu_bar(self):
         setting_menu = self.menu_bar.addAction("设置")
         setting_menu.triggered.connect(self.on_settings)
 
-    def __initialize_windows(self):
+    def _initialize_windows(self):
         self.setWindowTitle("LuxDown")
         set_window_size(self, ratio= 0.8)
         centered_ui.center_ui(self)
         self.main_widget.setLayout(self.main_layout)
         self.show()
+
+    def text_add(self, text):
+        self.text_edit.append(text)
 
     @Slot()
     def on_settings(self):
@@ -120,7 +142,7 @@ class MainInterface(QMainWindow):
                 pass
 
     def _parse_url_in_thread(self, url):
-        parsed = extract_info(url)
+        parsed = extract_info(url, self.logger)
         print(parsed)
         self.emitter.parse_finished.emit(parsed)
 
@@ -134,6 +156,7 @@ class MainInterface(QMainWindow):
         hbox = QHBoxLayout()
         self.main_layout.addLayout(hbox)
         hbox.addWidget(self.plain_text_edit)
+        hbox.addWidget(self.text_edit)
         hbox.addWidget(self.parse_button)
 
     def start_download(self, titles, urls):
@@ -147,5 +170,5 @@ class MainInterface(QMainWindow):
 
     def remove_task_item(self, widget):
         row = self.list_widget.row(widget)
-        delete = self.list_widget.takeItem(row)
-        del delete
+        dele = self.list_widget.takeItem(row)
+        del dele
