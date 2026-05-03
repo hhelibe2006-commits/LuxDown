@@ -4,8 +4,9 @@
 from yt_dlp import YoutubeDL
 
 
-def extract_info(url):
+def extract_info(url, logger):
     ydl_opts = {
+        'logger': logger,
         'max_sleep_interval': 30,
                 }
     with YoutubeDL(ydl_opts) as ydl: # type: ignore
