@@ -2,20 +2,22 @@
 该文件存放调用yt-dlp进行下载的函数与类
 """
 import yt_dlp
-
+"""'external_downloader': 'aria2c',
+        'external_downloader_args': [
+            '--min-split-size=1M',
+            '--max-connection-per-server=16',
+            '--split=16',
+            '--max-overall-download-limit=0'
+        ]"""
 
 def download(url, progress_hook, index, settings):
     ydl_opts = {
         "outtmpl": f"{settings.default_download_dir}\\{index}-%(title)s.%(ext)s",
         'progress_hooks': [progress_hook],
         'max_sleep_interval': 30,
-        'external_downloader': 'aria2c',
-        'external_downloader_args': [
-            '--min-split-size=1M',
-            '--max-connection-per-server=16',
-            '--split=16',
-            '--max-overall-download-limit=0'
-        ],
+        'socket_timeout': 30,
+        'retries': 10,
+        'fragment_retries' : 10
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
