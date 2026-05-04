@@ -23,26 +23,7 @@ class SettingsManager:
         if Path(self.settings_file).exists():
             with open(self.settings_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if data.get("path_input") is not None:
-                    self.default_download_dir = data.get("path_input")
-                else:
-                    pass
-                if data.get("audio") is not None and data.get("audio") in self.audio:
-                    self.current_audio_format = data.get("audio")
-                else:
-                    pass
-                if data.get("video") is not None and data.get("video") in self.video:
-                    self.current_video_format = data.get("video")
-                else:
-                    pass
-                if data.get("on_audio") is not None and data.get("on_audio") in {True, False}:
-                    self.download_audio = data.get("on_audio")
-                else:
-                    pass
-                if data.get("on_video") is not None and data.get("on_video") in {True, False}:
-                    self.download_video = data.get("on_video")
-                else:
-                    pass
+                self._update_from_dict(data)
         else:
             self._create_default_config()
 
@@ -58,6 +39,11 @@ class SettingsManager:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
     def apply_settings(self, settings : dict):
+        self._update_from_dict(settings)
+        with open(self.settings_file, "w", encoding="utf-8") as f:
+            json.dump(settings, f, ensure_ascii=False, indent=4)
+
+    def _update_from_dict(self,settings):
         if settings.get("path_input") is not None:
             self.default_download_dir = settings.get("path_input")
         else:
@@ -78,5 +64,3 @@ class SettingsManager:
             self.download_video = settings.get("on_video")
         else:
             pass
-        with open(self.settings_file, "w", encoding="utf-8") as f:
-            json.dump(settings, f, ensure_ascii=False, indent=4)
