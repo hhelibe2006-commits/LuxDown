@@ -2,22 +2,16 @@
 该文件存放调用yt-dlp进行下载的函数与类
 """
 import yt_dlp
-"""'external_downloader': 'aria2c',
-        'external_downloader_args': [
-            '--min-split-size=1M',
-            '--max-connection-per-server=16',
-            '--split=16',
-            '--max-overall-download-limit=0'
-        ]"""
+import os
 
 def download(url, progress_hook, index, settings):
     ydl_opts = {
-        "outtmpl": f"{settings.default_download_dir}\\{index}-%(title)s.%(ext)s",
+        "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
         'progress_hooks': [progress_hook],
         'max_sleep_interval': 30,
         'socket_timeout': 30,
         'retries': 10,
-        'fragment_retries' : 10
+        'fragment_retries' : 3
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
@@ -30,7 +24,11 @@ def download(url, progress_hook, index, settings):
         ydl_opts['format'] = 'bestvideo'
         ydl_opts['merge_output_format'] = settings.current_video_format
     else:
-        ydl_opts['format'] = ''
+        return False
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl: # type: ignore
-        ydl.download([url])
+        try:
+            ydl.download([url])
+        except Exception as e:
+            raise e
+    return True
