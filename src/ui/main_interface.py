@@ -143,12 +143,10 @@ class MainInterface(QMainWindow):
 
     def _parse_url_in_thread(self, url):
         parsed = extract_info(url, self.logger)
-        print(parsed)
         self.emitter.parse_finished.emit(parsed)
 
     def on_parse_finished(self, parsed):
         download_dialog = DownloadDialog(parsed, self.emitter)
-        download_dialog.initialize()
         download_dialog.exec()
 
     def setup_input_layout(self):

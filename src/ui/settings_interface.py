@@ -28,11 +28,11 @@ class SettingsInterface(QDialog):
         self.initialize()
 
     def initialize(self):
-        self.__initialize_path()
-        self.__initialize_download_content()
-        self.__initialize_format()
-        self.__initialize_windows()
-        self.__initialize_buttons()
+        self._initialize_path()
+        self._initialize_download_content()
+        self._initialize_format()
+        self._initialize_windows()
+        self._initialize_buttons()
 
     def synchronous(self):
         self.path_input.setText(self.settings_information.default_download_dir)
@@ -43,8 +43,8 @@ class SettingsInterface(QDialog):
         self.audio_combobox.setCurrentText(self.settings_information.current_audio_format)
         self.video_combobox.setCurrentText(self.settings_information.current_video_format)
 
-    def __initialize_buttons(self):
-        self.apply_button.clicked.connect(self.__on_apply_button)
+    def _initialize_buttons(self):
+        self.apply_button.clicked.connect(self._on_apply_button)
         self.cancel_button.clicked.connect(self.close)
         hbox = QHBoxLayout()
         hbox.addStretch()
@@ -52,15 +52,15 @@ class SettingsInterface(QDialog):
         hbox.addWidget(self.cancel_button)
         self.vbox.addLayout(hbox)
 
-    def __initialize_windows(self):
+    def _initialize_windows(self):
         self.setWindowTitle("设置")
         set_window_size(self, ratio= 0.6)
         center_ui(self)
         self.vbox.addStretch()
 
-    def __initialize_path(self):
+    def _initialize_path(self):
         self.path_input.setPlaceholderText("下载路径")
-        self.path_button.clicked.connect(self.__choose_dir)
+        self.path_button.clicked.connect(self._choose_dir)
         self.path_input.setText(self.settings_information.default_download_dir)
         hbox = QHBoxLayout()
         hbox.addWidget(self.path_input)
@@ -68,7 +68,7 @@ class SettingsInterface(QDialog):
         self.vbox.addWidget(QLabel("下载路径:"))
         self.vbox.addLayout(hbox)
 
-    def __initialize_download_content(self):
+    def _initialize_download_content(self):
         self.audio_box.setCheckable(True)
         self.video_box.setCheckable(True)
         self.audio_box.setChecked(self.settings_information.download_audio)
@@ -79,7 +79,7 @@ class SettingsInterface(QDialog):
         self.vbox.addWidget(QLabel("下载内容:"))
         self.vbox.addLayout(hbox)
 
-    def __initialize_format(self):
+    def _initialize_format(self):
         self.audio_combobox.addItems(self.settings_information.audio)
         self.video_combobox.addItems(self.settings_information.video)
         self.audio_combobox.setCurrentText(self.settings_information.current_audio_format)
@@ -95,13 +95,13 @@ class SettingsInterface(QDialog):
         self.vbox.addLayout(hbox)
 
     @Slot()
-    def __choose_dir(self):
+    def _choose_dir(self):
         dir_path = QFileDialog.getExistingDirectory(self, "选择文件夹", self.path_input.text())
         if dir_path:
             self.path_input.setText(dir_path)
 
     @Slot()
-    def __on_apply_button(self):
+    def _on_apply_button(self):
         dict_settings = {
             "path_input": self.path_input.text(),
             "audio": self.audio_combobox.currentText(),
