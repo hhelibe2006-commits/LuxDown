@@ -8,7 +8,7 @@ from utils import set_window_size, center_ui
 class DownloadDialog(QDialog):
     def __init__(self, parse_result:tuple, notifier):
         super().__init__()
-        self.title = parse_result[-2]
+        self.video_title = parse_result[-2]
         self.notifier = notifier
         self.main_layout = QVBoxLayout(self)
         self.top_area_layout = QHBoxLayout()
@@ -19,10 +19,10 @@ class DownloadDialog(QDialog):
         self.initialize(parse_result)
 
     def initialize(self,parse_result):
+        self._initialize_window()
         self._initialize_parse_result(parse_result)
         self._initialize_video_table(parse_result)
         self._initialize_main_layout()
-        self._initialize_window()
 
     def _initialize_parse_result(self, parse_result):
         self.webEngineView.setUrl(QUrl(parse_result[-1]))
@@ -34,6 +34,7 @@ class DownloadDialog(QDialog):
         self.top_area_layout.addLayout(self.right_panel_layout)
         self.top_area_layout.setStretch(0, 1)
         self.top_area_layout.setStretch(1, 2)
+        self.main_layout.addLayout(self.top_area_layout)
 
     def _initialize_video_table(self, parse_result):
         self.video_table.setHorizontalHeaderLabels(['', '标题', '时长', '链接'])
@@ -59,7 +60,6 @@ class DownloadDialog(QDialog):
         self.main_layout.setStretch(1, 2)
 
     def _initialize_window(self):
-        self.main_layout.addLayout(self.top_area_layout)
         self.setWindowTitle("下载")
         set_window_size(self, 0.8)
         center_ui(self)
