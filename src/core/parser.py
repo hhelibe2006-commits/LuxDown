@@ -3,7 +3,6 @@
 """
 from yt_dlp import YoutubeDL
 
-
 def extract_info(url, logger):
     ydl_opts = {
         'logger': logger,
@@ -20,7 +19,7 @@ def extract_info(url, logger):
         entries = []
         if info.get('_type') is not None:
             for entry in info.get('entries'):
-                entries.append({key:value for key,value in entry.items() if key in desired_keys})
+                entries.append({key: value for key,value in entry.items() if key in desired_keys})
         else:
-            entries.append({j:k for j,k in info.items() if j in desired_keys})
+            entries.append({key: info[key] for key in desired_keys if key in info})
         return entries,info.get("description"), info.get('title'), info.get('thumbnail')
