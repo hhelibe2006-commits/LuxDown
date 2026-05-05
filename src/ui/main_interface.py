@@ -53,7 +53,6 @@ class DownloadTaskWidget(QWidget):
         self.setLayout(self.hbox)
         self.button.clicked.connect(self.on_cancel_clicked)
         self.emitter.progress_update.connect(self.update_progress)
-        self.executor = ThreadPoolExecutor(max_workers=1)
 
     @Slot()
     def on_cancel_clicked(self):
@@ -67,7 +66,7 @@ class DownloadTaskWidget(QWidget):
         if self.is_cancelled:
             raise
         if d['status'] == 'downloading':
-            self.executor.submit(self.emitter.progress_update.emit, d.get('_percent'))
+            self.emitter.progress_update.emit(d['_percent'])
         elif d['status'] == 'finished':
             self.external_emitter.download_finished.emit(self.list_item)
 
@@ -166,7 +165,10 @@ class MainInterface(QMainWindow):
             self.list_widget.setItemWidget(list_item,task_widget)
             self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information)
 
-    def remove_task_item(self, widget):
-        row = self.list_widget.row(widget)
-        dele = self.list_widget.takeItem(row)
-        del dele
+    def remove_task_item(self, item):
+        row = self.list_widget.row(item)
+        if row != -1:
+            widget = self.list_widget.itemWidget(item)
+            if widget is not None:
+                widget.deleteLater()
+            self.list_widget.takeItem(row)
