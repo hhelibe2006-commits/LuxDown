@@ -46,21 +46,15 @@ class SettingsManager:
     def _update_from_dict(self,settings):
         if settings.get("path_input") is not None:
             self.default_download_dir = settings.get("path_input")
-        else:
-            pass
+
         if settings.get("audio") is not None and settings.get("audio") in self.audio:
             self.current_audio_format = settings.get("audio")
-        else:
-            pass
+
         if settings.get("video") is not None and settings.get("video") in self.video:
             self.current_video_format = settings.get("video")
-        else:
-            pass
+
         if settings.get("on_audio") is not None and settings.get("on_audio") in {True, False}:
             self.download_audio = settings.get("on_audio")
-        else:
-            pass
+
         if settings.get("on_video") is not None and settings.get("on_video") in {True, False}:
             self.download_video = settings.get("on_video")
-        else:
-            pass
