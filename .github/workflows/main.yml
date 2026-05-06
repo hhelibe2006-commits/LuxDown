@@ -1,0 +1,85 @@
+name: Build Standalone Binaries
+
+on:
+  push:
+    branches: [ main ]      # 推送到 main 分支时触发
+  workflow_dispatch:        # 允许手动触发
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'   # PySide6 兼容 3.9+，推荐 3.11
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          # 如果有其他依赖，建议放在 requirements.txt 中，并用:
+          # pip install -r requirements.txt
+
+      # ------ 安装 Clang ------
+      - name: Install Clang (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install llvm -y --no-progress
+          # 将 LLVM 的 bin 加入 PATH（后续步骤生效）
+          echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+
+      - name: Install Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
+      # macOS 自带 clang，无需额外安装
+
+      # ------ Nuitka 编译 ------
+      - name: Build with Nuitka (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
+            --clang --jobs=1 --low-memory `
+            --windows-console-mode=disable `
+            --windows-icon-from-ico=src/LuxDown.ico `
+            --windows-company-name="hhelibe2006" `
+            --windows-product-name="LuxDown" `
+            --windows-file-version=1.0.0.0 `
+            --windows-product-version=1.0.0.0 `
+            --windows-file-description=" 这是一款用于下载视频的软件" `
+            --output-dir=build `
+            --output-filename=LuxDown
+
+      - name: Build with Nuitka (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
+            --clang --jobs=1 --low-memory `
+            --output-dir=build `
+            --output-filename=LuxDown
+
+      - name: Build with Nuitka (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
+            --clang --jobs=1 --low-memory `
+            --output-dir=build `
+            --output-filename=LuxDown
+
+      # ------ 上传构件 ------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxDown-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}  # 名称包含系统
+          path: |
+            build/main.dist/**   # Nuitka 输出的 standalone 目录
