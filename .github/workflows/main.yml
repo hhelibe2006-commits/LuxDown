@@ -66,15 +66,15 @@ jobs:
             --output-dir=build `
             --output-filename=LuxDown
 
-      - name: Build with Nuitka (macOS)
+      - name: Build with Nuitka (macOS) as .app bundle
         if: runner.os == 'macOS'
         run: |
           nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py \
             --clang --jobs=1 --low-memory \
             --output-dir=build \
             --output-filename=LuxDown \
-            --noinclude-pytest-mode=nofollow \
-            --include-package=yt_dlp
+            --macos-create-app-bundle \
+            --macos-app-icon=src/LuxDown.icns
 
       - name: Build with Nuitka (Linux)
         if: runner.os == 'Linux'
