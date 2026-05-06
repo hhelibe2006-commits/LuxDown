@@ -2,8 +2,8 @@ name: Build Standalone Binaries
 
 on:
   push:
-    branches: [ main ]      # 推送到 main 分支时触发
-  workflow_dispatch:        # 允许手动触发
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,21 +19,27 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'   # PySide6 兼容 3.9+，推荐 3.11
+          python-version: '3.12'   # 3.12 完全可用，保持即可
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install .
-          # 如果有其他依赖，建议放在 requirements.txt 中，并用:
-          # pip install -r requirements.txt
+          pip install nuitka
 
-      # ------ 安装 Clang ------
+      # ------ 清理 macOS 环境（释放空间/缓存）------
+      - name: Cleanup before build (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          sudo rm -rf /Library/Developer/CoreSimulator
+          sudo rm -rf /Applications/Xcode_*.app
+          df -h
+
+      # ------ 安装 Clang（Windows / Linux）------
       - name: Install Clang (Windows)
         if: runner.os == 'Windows'
         run: |
           choco install llvm -y --no-progress
-          # 将 LLVM 的 bin 加入 PATH（后续步骤生效）
           echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
 
       - name: Install Clang (Linux)
@@ -44,7 +50,7 @@ jobs:
 
       # macOS 自带 clang，无需额外安装
 
-      # ------ Nuitka 编译 ------
+      # ------ Nuitka 编译 (每个平台使用各自的续行语法) ------
       - name: Build with Nuitka (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -63,23 +69,25 @@ jobs:
       - name: Build with Nuitka (macOS)
         if: runner.os == 'macOS'
         run: |
-          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
-            --clang --jobs=1 --low-memory `
-            --output-dir=build `
-            --output-filename=LuxDown
+          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py \
+            --clang --jobs=1 --low-memory \
+            --output-dir=build \
+            --output-filename=LuxDown \
+            --noinclude-pytest-mode=nofollow \
+            --include-package=yt_dlp
 
       - name: Build with Nuitka (Linux)
         if: runner.os == 'Linux'
         run: |
-          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
-            --clang --jobs=1 --low-memory `
-            --output-dir=build `
+          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py \
+            --clang --jobs=1 --low-memory \
+            --output-dir=build \
             --output-filename=LuxDown
 
       # ------ 上传构件 ------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LuxDown-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}  # 名称包含系统
+          name: LuxDown-${{ runner.os }}
           path: |
-            build/main.dist/**   # Nuitka 输出的 standalone 目录
+            build/main.dist/**
