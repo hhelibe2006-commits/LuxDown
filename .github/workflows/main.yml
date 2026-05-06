@@ -1,8 +1,6 @@
 name: Build Standalone Binaries
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -74,7 +72,7 @@ jobs:
             --output-dir=build \
             --output-filename=LuxDown \
             --macos-create-app-bundle \
-            --macos-app-icon=src/LuxDown.icns
+            --macos-app-icon=./LuxDown.icns
 
       - name: Build with Nuitka (Linux)
         if: runner.os == 'Linux'
