@@ -48,7 +48,7 @@ class DownloadTaskWidget(QWidget):
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
         self.hbox.addWidget(self.progress_bar)
-        self.button = QPushButton("取消")
+        self.button = QPushButton(self.tr("取消"))
         self.hbox.addWidget(self.button)
         self.setLayout(self.hbox)
         self.button.clicked.connect(self.on_cancel_clicked)
@@ -78,7 +78,7 @@ class MainInterface(QMainWindow):
         super().__init__()
         self.text_edit = QTextEdit()
         self.plain_text_edit = QPlainTextEdit()
-        self.parse_button = QPushButton("解析")
+        self.parse_button = QPushButton(self.tr("解析"))
         self.logger = MyLogger()
         self.main_widget = QWidget()
         self.main_layout = QVBoxLayout()
@@ -101,23 +101,23 @@ class MainInterface(QMainWindow):
         self._initialize_windows()
 
     def _initialize_help_menu_bar(self):
-        help_menu = self.menu_bar.addMenu("帮助")
-        help_menu.addAction("检查更新")
-        help_menu.addAction("关于")
-        help_menu.addAction("帮助")
+        help_menu = self.menu_bar.addMenu(self.tr("帮助"))
+        help_menu.addAction(self.tr("检查更新"))
+        help_menu.addAction(self.tr("关于"))
+        help_menu.addAction(self.tr("帮助"))
 
     def _initialize_parsing_box(self):
-        self.plain_text_edit.setPlaceholderText("请输入链接")
+        self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
         self.text_edit.setReadOnly(True)
         self.parse_button.clicked.connect(self.on_parse_button_clicked)
         self.setup_input_layout()
 
     def _initialize_menu_bar(self):
-        setting_menu = self.menu_bar.addAction("设置")
+        setting_menu = self.menu_bar.addAction(self.tr("设置"))
         setting_menu.triggered.connect(self.on_settings)
 
     def _initialize_windows(self):
-        self.setWindowTitle("LuxDown")
+        self.setWindowTitle(self.tr("LuxDown"))
         set_window_size(self, ratio= 0.8)
         centered_ui.center_ui(self)
         self.main_widget.setLayout(self.main_layout)
