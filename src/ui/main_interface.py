@@ -65,6 +65,7 @@ class DownloadTaskWidget(QWidget):
     def progress_hook(self, d):
         if self.is_cancelled:
             raise
+        print(d)
         if d['status'] == 'downloading':
             self.emitter.progress_update.emit(d['_percent'])
         elif d['status'] == 'finished':
@@ -133,6 +134,7 @@ class MainInterface(QMainWindow):
 
     @Slot()
     def on_parse_button_clicked(self):
+        self.text_edit.clear()
         urls = text_to_list(self.plain_text_edit)
         for url in urls:
             if is_url(url):
@@ -163,7 +165,7 @@ class MainInterface(QMainWindow):
             task_widget.list_item=list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
-            self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information)
+            self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information, self.logger)
 
     def remove_task_item(self, item):
         row = self.list_widget.row(item)
