@@ -37,7 +37,7 @@ class DownloadDialog(QDialog):
         self.main_layout.addLayout(self.top_area_layout)
 
     def _initialize_video_table(self, parse_result):
-        self.video_table.setHorizontalHeaderLabels(['', '标题', '时长', '链接'])
+        self.video_table.setHorizontalHeaderLabels(['', self.tr('标题'), self.tr('时长'), self.tr('链接')])
         self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         for row in range(len(parse_result[0])):
             self.video_table.setCellWidget(row, 0, QCheckBox())
@@ -49,8 +49,8 @@ class DownloadDialog(QDialog):
     def _initialize_main_layout(self):
         hbox = QHBoxLayout()
         hbox.addStretch()
-        self.apply_button = QPushButton("下载")
-        self.cancel_button = QPushButton("取消")
+        self.apply_button = QPushButton(self.tr("下载"))
+        self.cancel_button = QPushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.close)
         self.apply_button.clicked.connect(self.download)
         hbox.addWidget(self.apply_button)
@@ -60,7 +60,7 @@ class DownloadDialog(QDialog):
         self.main_layout.setStretch(1, 2)
 
     def _initialize_window(self):
-        self.setWindowTitle("下载")
+        self.setWindowTitle(self.tr("下载"))
         set_window_size(self, 0.8)
         center_ui(self)
 
