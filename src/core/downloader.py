@@ -4,11 +4,12 @@
 import yt_dlp
 import os
 
-def download(url, progress_hook, index, settings):
+def download(url, progress_hook, index, settings, logger):
     ydl_opts = {
+        "logger": logger,
         "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
         'progress_hooks': [progress_hook],
-        'max_sleep_interval': 30,
+        'max_sleep_interval': 5,
         'socket_timeout': 30,
         'retries': 10,
         'fragment_retries' : 3
