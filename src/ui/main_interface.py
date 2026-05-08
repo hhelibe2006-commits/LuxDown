@@ -4,8 +4,8 @@
 from concurrent.futures import ThreadPoolExecutor
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar,\
-    QListWidget, QLabel, QListWidgetItem, QTextEdit
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar, \
+    QListWidget, QLabel, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
 from src.utils import centered_ui, set_window_size, text_to_list, is_url
@@ -40,6 +40,7 @@ class DownloadTaskWidget(QWidget):
         super().__init__()
         self.list_item = None
         self.is_cancelled = False
+        self.e = False
         self.external_emitter = signal
         self.emitter = SignalEmitter()
         self.hbox = QHBoxLayout()
@@ -65,11 +66,12 @@ class DownloadTaskWidget(QWidget):
     def progress_hook(self, d):
         if self.is_cancelled:
             raise
-        print(d)
         if d['status'] == 'downloading':
             self.emitter.progress_update.emit(d['_percent'])
         elif d['status'] == 'finished':
-            self.external_emitter.download_finished.emit(self.list_item)
+            if not self.e:
+                self.external_emitter.download_finished.emit(self.list_item)
+            self.e = False
 
 class MainInterface(QMainWindow):
     """
@@ -97,9 +99,30 @@ class MainInterface(QMainWindow):
     def initialize(self):
         self._initialize_parsing_box()
         self._initialize_menu_bar()
+        self._initialize_cookies_menu_bar()
         self._initialize_help_menu_bar()
         self.main_layout.addWidget(self.list_widget)
         self._initialize_windows()
+        #reply = QMessageBox.question(self, '确认', '是否保存？',
+        #                             QMessageBox.Yes, QMessageBox.No)
+
+    def _initialize_cookies_menu_bar(self):
+        cookies_menu = self.menu_bar.addMenu(self.tr("cookies"))
+        w = cookies_menu.addAction(self.tr("导入cookies"))
+        d = cookies_menu.addAction(self.tr("清除cookies"))
+        w.triggered.connect(self.wcookies)
+        d.triggered.connect(self.dcookies)
+
+    def dcookies(self):
+        with open('cookies.txt', 'w', encoding='utf-8') as f:
+            f.write('')
+
+    def wcookies(self):
+        file, _ = QFileDialog.getOpenFileName(self)
+        if file:
+            with open(file, 'r', encoding='utf-8') as date:
+                with open('cookies.txt', 'w', encoding='utf-8') as f:
+                    f.write(date.read())
 
     def _initialize_help_menu_bar(self):
         help_menu = self.menu_bar.addMenu(self.tr("帮助"))
@@ -162,6 +185,7 @@ class MainInterface(QMainWindow):
         for index in urls.keys() & titles.keys():
             list_item = QListWidgetItem(self.list_widget)
             task_widget = DownloadTaskWidget(self.emitter, titles[index])
+            task_widget.e=self.settings_dialog.settings_information.download_audio and self.settings_dialog.settings_information.download_video
             task_widget.list_item=list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
