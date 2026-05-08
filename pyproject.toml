@@ -7,6 +7,7 @@ dependencies = [
     "nuitka>=4.0.8",
     "packaging>=26.2",
     "pyside6>=6.11.0",
+    "requests>=2.33.1",
     "yt-dlp>=2026.3.17",
     "yt-dlp-ejs>=0.8.0",
 ]
