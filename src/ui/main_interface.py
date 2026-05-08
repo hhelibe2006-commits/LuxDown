@@ -1,6 +1,8 @@
 """
 该文件存放主界面的类
 """
+VERSION="v1.0.0"
+import requests
 from concurrent.futures import ThreadPoolExecutor
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
@@ -8,11 +10,11 @@ from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QListWidget, QLabel, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
+from packaging import version
 from src.utils import centered_ui, set_window_size, text_to_list, is_url
 from ui.settings_interface import SettingsInterface
-from src.core import extract_info
+from src.core import extract_info, download
 from ui.parser_interface import DownloadDialog
-from core import download
 
 class MyLogger(QObject):
     log_signal = Signal(str)
@@ -24,11 +26,10 @@ class MyLogger(QObject):
         self.log_signal.emit(msg)
 
     def error(self, msg):
-        self.log_signal.emit(f'<span style="color: red;">{msg}<</span>')
+        self.log_signal.emit(f'<span style="color: red;">{msg}</span>')
 
     def info(self, msg):
         self.log_signal.emit(msg)
-
 class SignalEmitter(QObject):
     parse_finished = Signal(tuple)
     download_start = Signal(object, object)
@@ -54,6 +55,7 @@ class DownloadTaskWidget(QWidget):
         self.setLayout(self.hbox)
         self.button.clicked.connect(self.on_cancel_clicked)
         self.emitter.progress_update.connect(self.update_progress)
+
 
     @Slot()
     def on_cancel_clicked(self):
@@ -96,6 +98,11 @@ class MainInterface(QMainWindow):
         self.emitter.download_finished.connect(self.remove_task_item)
         self.logger.log_signal.connect(self.text_add)
 
+    def closeEvent(self, event):
+        self.executor.shutdown(wait=False)
+        self.download_executor.shutdown(wait=False)
+        super().closeEvent(event)
+
     def initialize(self):
         self._initialize_parsing_box()
         self._initialize_menu_bar()
@@ -114,6 +121,9 @@ class MainInterface(QMainWindow):
         d.triggered.connect(self.dcookies)
 
     def dcookies(self):
+        reply = QMessageBox.question(self, '确认', '是否删除', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.No:
+            return
         with open('cookies.txt', 'w', encoding='utf-8') as f:
             f.write('')
 
@@ -126,9 +136,10 @@ class MainInterface(QMainWindow):
 
     def _initialize_help_menu_bar(self):
         help_menu = self.menu_bar.addMenu(self.tr("帮助"))
-        help_menu.addAction(self.tr("检查更新"))
+        up_date=help_menu.addAction(self.tr("检查更新"))
         help_menu.addAction(self.tr("关于"))
         help_menu.addAction(self.tr("帮助"))
+        up_date.triggered.connect(self.up_date)
 
     def _initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
@@ -164,6 +175,28 @@ class MainInterface(QMainWindow):
                 self.executor.submit(self._parse_url_in_thread, url)
             else:
                 pass
+
+    @Slot()
+    def up_date(self):
+        api_url="https://api.github.com/repos/hhelibe2006-commits/LuxDown/releases/latest"
+        try:
+            response = requests.get(api_url)
+            response.raise_for_status()
+
+            date = response.json()
+            latest_version = date['tag_name']
+            download_url = date['html_url']
+
+            if version.parse(latest_version) > version.parse(VERSION):
+                reply = QMessageBox.question(self, '是否下载','有新版本', QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    from PySide6.QtGui import QDesktopServices
+                    from PySide6.QtCore import QUrl
+                    QDesktopServices.openUrl(QUrl(download_url))
+            else:
+                QMessageBox.information(self, "检查更新", "已是最新版本。")
+        except requests.RequestException:
+            QMessageBox.warning(self, "检查更新", "无法连接到更新服务器，请检查网络。")
 
     def _parse_url_in_thread(self, url):
         parsed = extract_info(url, self.logger)
