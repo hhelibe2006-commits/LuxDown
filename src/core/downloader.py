@@ -3,6 +3,8 @@
 """
 import yt_dlp
 import os
+import platform
+
 
 def download(url, progress_hook, index, settings, logger):
     ydl_opts = {
@@ -12,7 +14,8 @@ def download(url, progress_hook, index, settings, logger):
         'max_sleep_interval': 5,
         'socket_timeout': 30,
         'retries': 10,
-        'fragment_retries' : 3
+        'fragment_retries': 3,
+        'cookiefile': 'cookies.txt',
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
@@ -27,7 +30,11 @@ def download(url, progress_hook, index, settings, logger):
     else:
         return False
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl: # type: ignore
+    if platform.system() == 'Windows':
+        ydl_opts['ffmpeg_location'] = os.path.join('ffmpeg', 'bin', 'ffmpeg.exe')
+        ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
         try:
             ydl.download([url])
         except Exception as e:
