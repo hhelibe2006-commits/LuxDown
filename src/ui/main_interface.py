@@ -41,7 +41,7 @@ class DownloadTaskWidget(QWidget):
         super().__init__()
         self.list_item = None
         self.is_cancelled = False
-        self.e = False
+        self.is_dual_download = False
         self.external_emitter = signal
         self.emitter = SignalEmitter()
         self.hbox = QHBoxLayout()
@@ -71,9 +71,9 @@ class DownloadTaskWidget(QWidget):
         if d['status'] == 'downloading':
             self.emitter.progress_update.emit(d['_percent'])
         elif d['status'] == 'finished':
-            if not self.e:
+            if not self.is_dual_download:
                 self.external_emitter.download_finished.emit(self.list_item)
-            self.e = False
+            self.is_dual_download = False
 
 class MainInterface(QMainWindow):
     """
@@ -96,7 +96,7 @@ class MainInterface(QMainWindow):
         self.emitter.parse_finished.connect(self.on_parse_finished)
         self.emitter.download_start.connect(self.start_download)
         self.emitter.download_finished.connect(self.remove_task_item)
-        self.logger.log_signal.connect(self.text_add)
+        self.logger.log_signal.connect(self.append_log_text)
 
     def closeEvent(self, event):
         self.executor.shutdown(wait=False)
@@ -117,17 +117,17 @@ class MainInterface(QMainWindow):
         cookies_menu = self.menu_bar.addMenu(self.tr("cookies"))
         w = cookies_menu.addAction(self.tr("导入cookies"))
         d = cookies_menu.addAction(self.tr("清除cookies"))
-        w.triggered.connect(self.wcookies)
-        d.triggered.connect(self.dcookies)
+        w.triggered.connect(self.import_cookies)
+        d.triggered.connect(self.clear_cookies)
 
-    def dcookies(self):
-        reply = QMessageBox.question(self, '确认', '是否删除', QMessageBox.Yes, QMessageBox.No)
-        if reply == QMessageBox.No:
+    def clear_cookies(self):
+        reply = QMessageBox.question(self, '确认', '是否删除', QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.No:
             return
         with open('cookies.txt', 'w', encoding='utf-8') as f:
             f.write('')
 
-    def wcookies(self):
+    def import_cookies(self):
         file, _ = QFileDialog.getOpenFileName(self)
         if file:
             with open(file, 'r', encoding='utf-8') as date:
@@ -139,13 +139,13 @@ class MainInterface(QMainWindow):
         up_date=help_menu.addAction(self.tr("检查更新"))
         help_menu.addAction(self.tr("关于"))
         help_menu.addAction(self.tr("帮助"))
-        up_date.triggered.connect(self.up_date)
+        up_date.triggered.connect(self.check_update)
 
     def _initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
         self.text_edit.setReadOnly(True)
         self.parse_button.clicked.connect(self.on_parse_button_clicked)
-        self.setup_input_layout()
+        self._setup_input_layout()
 
     def _initialize_menu_bar(self):
         setting_menu = self.menu_bar.addAction(self.tr("设置"))
@@ -158,7 +158,7 @@ class MainInterface(QMainWindow):
         self.main_widget.setLayout(self.main_layout)
         self.show()
 
-    def text_add(self, text):
+    def append_log_text(self, text):
         self.text_edit.append(text)
 
     @Slot()
@@ -177,19 +177,19 @@ class MainInterface(QMainWindow):
                 pass
 
     @Slot()
-    def up_date(self):
+    def check_update(self):
         api_url="https://api.github.com/repos/hhelibe2006-commits/LuxDown/releases/latest"
         try:
             response = requests.get(api_url)
             response.raise_for_status()
 
-            date = response.json()
-            latest_version = date['tag_name']
-            download_url = date['html_url']
+            data = response.json()
+            latest_version = data['tag_name']
+            download_url = data['html_url']
 
             if version.parse(latest_version) > version.parse(VERSION):
-                reply = QMessageBox.question(self, '是否下载','有新版本', QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
+                reply = QMessageBox.question(self, '有新版本','是否下载', QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+                if reply == QMessageBox.StandardButton.Yes:
                     from PySide6.QtGui import QDesktopServices
                     from PySide6.QtCore import QUrl
                     QDesktopServices.openUrl(QUrl(download_url))
@@ -206,7 +206,7 @@ class MainInterface(QMainWindow):
         download_dialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 
-    def setup_input_layout(self):
+    def _setup_input_layout(self):
         self.setCentralWidget(self.main_widget)
         hbox = QHBoxLayout()
         self.main_layout.addLayout(hbox)
@@ -218,7 +218,7 @@ class MainInterface(QMainWindow):
         for index in urls.keys() & titles.keys():
             list_item = QListWidgetItem(self.list_widget)
             task_widget = DownloadTaskWidget(self.emitter, titles[index])
-            task_widget.e=self.settings_dialog.settings_information.download_audio and self.settings_dialog.settings_information.download_video
+            task_widget.is_dual_download= self.settings_dialog.settings_information.download_audio and self.settings_dialog.settings_information.download_video
             task_widget.list_item=list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
