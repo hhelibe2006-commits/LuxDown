@@ -10,6 +10,7 @@ class SettingsManager:
     """
     def __init__(self):
         self.default_download_dir = str(Path.home() / "Downloads")
+        self.cookie_file = str(Path(__file__).parent.parent / 'cookies.txt')
         self.audio = ["mp3", "m4a", "aac", "wav", "ogg", "flac"]
         self.video = ["mp4", "webm", "mov", "mkv"]
         self.current_audio_format = "mp3"
@@ -26,6 +27,10 @@ class SettingsManager:
                 self._update_from_dict(data)
         else:
             self._create_default_config()
+
+        if not Path(self.cookie_file).exists():
+            with open(self.cookie_file, "w", encoding="utf-8") as f:
+                f.write("")
 
     def _create_default_config(self):
         data = {
