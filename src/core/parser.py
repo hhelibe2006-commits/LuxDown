@@ -5,11 +5,11 @@ from yt_dlp import YoutubeDL
 import platform
 import os
 
-def extract_info(url, logger, settings):
+def extract_info(url, logger):
     ydl_opts = {
         'logger': logger,
         'max_sleep_interval': 30,
-        'cookiefile': settings.settings_information.cookie_file,
+        'cookiefile': 'cookies.txt',
                 }
     if platform.system() == 'Windows':
         ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')
