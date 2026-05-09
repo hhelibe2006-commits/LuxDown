@@ -2,19 +2,22 @@
 该文件存放主界面的类
 """
 VERSION="v1.0.0"
-import requests
 from concurrent.futures import ThreadPoolExecutor
-# pylint: disable=no-name-in-module
-from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar, \
-    QListWidget, QLabel, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
+
+import requests
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, Signal, QObject
+# pylint: disable=no-name-in-module
+from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
 from packaging import version
-from src.utils import centered_ui, set_window_size, text_to_list, is_url
-from ui.settings_interface import SettingsInterface
+
 from src.core import extract_info, download
+from src.utils import centered_ui, set_window_size, text_to_list, is_url
+from ui.download_task_widget import DownloadTaskWidget
 from ui.parser_interface import DownloadDialog
+from ui.settings_interface import SettingsInterface
+
 
 class MyLogger(QObject):
     log_signal = Signal(str)
@@ -30,50 +33,12 @@ class MyLogger(QObject):
 
     def info(self, msg):
         self.log_signal.emit(msg)
+
 class SignalEmitter(QObject):
     parse_finished = Signal(tuple)
     download_start = Signal(object, object)
     progress_update = Signal(object)
     download_finished = Signal(object)
-
-class DownloadTaskWidget(QWidget):
-    def __init__(self, signal, title):
-        super().__init__()
-        self.list_item = None
-        self.is_cancelled = False
-        self.is_dual_download = False
-        self.external_emitter = signal
-        self.emitter = SignalEmitter()
-        self.hbox = QHBoxLayout()
-        self.label = QLabel(title)
-        self.hbox.addWidget(self.label)
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(0)
-        self.hbox.addWidget(self.progress_bar)
-        self.button = QPushButton(self.tr("取消"))
-        self.hbox.addWidget(self.button)
-        self.setLayout(self.hbox)
-        self.button.clicked.connect(self.on_cancel_clicked)
-        self.emitter.progress_update.connect(self.update_progress)
-
-
-    @Slot()
-    def on_cancel_clicked(self):
-        self.is_cancelled = True
-        self.external_emitter.download_finished.emit(self.list_item)
-
-    def update_progress(self, value):
-        self.progress_bar.setValue(value)
-
-    def progress_hook(self, d):
-        if self.is_cancelled:
-            raise
-        if d['status'] == 'downloading':
-            self.emitter.progress_update.emit(d['_percent'])
-        elif d['status'] == 'finished':
-            if not self.is_dual_download:
-                self.external_emitter.download_finished.emit(self.list_item)
-            self.is_dual_download = False
 
 class MainInterface(QMainWindow):
     """
@@ -199,7 +164,7 @@ class MainInterface(QMainWindow):
             QMessageBox.warning(self, "检查更新", "无法连接到更新服务器，请检查网络。")
 
     def _parse_url_in_thread(self, url):
-        parsed = extract_info(url, self.logger)
+        parsed = extract_info(url, self.logger, self.settings_dialog)
         self.emitter.parse_finished.emit(parsed)
 
     def on_parse_finished(self, parsed):
@@ -218,11 +183,26 @@ class MainInterface(QMainWindow):
         for index in urls.keys() & titles.keys():
             list_item = QListWidgetItem(self.list_widget)
             task_widget = DownloadTaskWidget(self.emitter, titles[index])
-            task_widget.is_dual_download= self.settings_dialog.settings_information.download_audio and self.settings_dialog.settings_information.download_video
+            task_widget._is_dual_download= (
+                    self.settings_dialog.settings_information.download_audio and
+                    self.settings_dialog.settings_information.download_video
+            )
             task_widget.list_item=list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
-            self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information, self.logger)
+            future = self.download_executor.submit(
+                download,
+                urls[index],
+                task_widget.progress_hook,
+                index,
+                self.settings_dialog.settings_information,
+                self.logger
+            )
+            future.add_done_callback(
+                lambda f, item = list_item: self._on_download_done(f, item)
+                                     )
+    def _on_download_done(self, future, item: QListWidgetItem):
+        self.remove_task_item(item)
 
     def remove_task_item(self, item):
         row = self.list_widget.row(item)
