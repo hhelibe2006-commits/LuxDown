@@ -14,7 +14,7 @@ from packaging import version
 
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, is_url
-from ui.download_task_widget import DownloadTaskWidget
+from ui.download_task_widget import DownloadTaskWidget, SignalEmitter
 from ui.parser_interface import DownloadDialog
 from ui.settings_interface import SettingsInterface
 
@@ -34,11 +34,6 @@ class MyLogger(QObject):
     def info(self, msg):
         self.log_signal.emit(msg)
 
-class SignalEmitter(QObject):
-    parse_finished = Signal(tuple)
-    download_start = Signal(object, object)
-    progress_update = Signal(object)
-    download_finished = Signal(object)
 
 class MainInterface(QMainWindow):
     """
