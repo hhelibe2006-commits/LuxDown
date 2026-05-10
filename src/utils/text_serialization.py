@@ -3,11 +3,11 @@
 """
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QPlainTextEdit
-def text_to_list(editor : QPlainTextEdit):
+def text_to_list(editor : QPlainTextEdit) -> list[str]:
     """
 
     :param editor:
     :return:
     """
-    urls = editor.toPlainText()
+    urls : str = editor.toPlainText()
     return urls.splitlines()

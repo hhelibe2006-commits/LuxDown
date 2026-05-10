@@ -7,8 +7,8 @@ import platform
 from yt_dlp import YoutubeDL
 
 
-def extract_info(url, logger):
-    ydl_opts = {
+def extract_info(url, logger) -> tuple[list]:
+    ydl_opts : dict = {
         'logger': logger,
         'max_sleep_interval': 30,
         'cookiefile': 'cookies.txt',
@@ -19,8 +19,8 @@ def extract_info(url, logger):
     with YoutubeDL(ydl_opts) as ydl: # type: ignore
         info = ydl.extract_info(url, download=False)
         if not info:
-            return []
-        desired_keys = [
+            return tuple()
+        desired_keys : list = [
             'title', 'id', 'description', 'ext', 'duration_string',
             'filesize_approx', 'webpage_url'
         ]

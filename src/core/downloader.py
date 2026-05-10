@@ -1,13 +1,15 @@
 """
 该文件存放调用yt-dlp进行下载的函数与类
 """
+from typing import Callable
 import os
 import platform
 
 import yt_dlp
+from information import SettingsManager
 
 
-def download(url, progress_hook, index, settings, logger):
+def download(url : str, progress_hook : Callable, index : str, settings : SettingsManager, logger) -> bool:
     ydl_opts = {
         "logger": logger,
         "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
