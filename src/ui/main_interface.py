@@ -51,11 +51,6 @@ class MainInterface(QMainWindow):
         self.download_executor = ThreadPoolExecutor()
         self.check_update_executor = ThreadPoolExecutor(max_workers=1)
         self.emitter = SignalEmitter()
-        self.emitter.parse_finished.connect(self.on_parse_finished)
-        self.emitter.download_start.connect(self.start_download)
-        self.emitter.download_finished.connect(self.remove_task_item)
-        self.emitter.check_update.connect(self.ui_tra)
-        self.logger.log_signal.connect(self.append_log_text)
 
     def closeEvent(self, event):
         self.executor.shutdown(wait=False)
@@ -64,14 +59,13 @@ class MainInterface(QMainWindow):
         super().closeEvent(event)
 
     @Slot()
-    def ui_tra(self, str, url):
-        print(1)
+    def ui_tra(self, string, url):
         reply = QMessageBox(self)
-        if str == 'err':
+        if string == 'err':
             reply.setWindowTitle('检测更新')
             reply.setText('无法连接到更新服务器，请检查网络。')
             reply.exec()
-        elif str:
+        elif string:
             reply.setWindowTitle('有新版本')
             reply.setText('是否下载')
             reply.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
@@ -86,14 +80,19 @@ class MainInterface(QMainWindow):
             reply.exec()
 
     def initialize(self):
+        self.signal_binding()
         self._initialize_parsing_box()
         self._initialize_menu_bar()
         self._initialize_cookies_menu_bar()
         self._initialize_help_menu_bar()
-        self.main_layout.addWidget(self.list_widget)
         self._initialize_windows()
-        #reply = QMessageBox.question(self, '确认', '是否保存？',
-        #                             QMessageBox.Yes, QMessageBox.No)
+
+    def signal_binding(self):
+        self.emitter.parse_finished.connect(self.on_parse_finished)
+        self.emitter.download_start.connect(self.start_download)
+        self.emitter.download_finished.connect(self.remove_task_item)
+        self.emitter.check_update.connect(self.ui_tra)
+        self.logger.log_signal.connect(self.append_log_text)
 
     def _initialize_cookies_menu_bar(self):
         cookies_menu = self.menu_bar.addMenu(self.tr("cookies"))
@@ -140,6 +139,7 @@ class MainInterface(QMainWindow):
         setting_menu.triggered.connect(self.on_settings)
 
     def _initialize_windows(self):
+        self.main_layout.addWidget(self.list_widget)
         self.setWindowTitle(self.tr("LuxDown"))
         set_window_size(self, ratio= 0.8)
         centered_ui.center_ui(self)
