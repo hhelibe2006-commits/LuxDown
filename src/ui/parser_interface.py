@@ -1,7 +1,8 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
-    QHeaderView, QPushButton
 from PySide6.QtCore import QUrl, Slot
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
+    QHeaderView, QPushButton
+
 from utils import set_window_size, center_ui
 
 

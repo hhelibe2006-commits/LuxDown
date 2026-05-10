@@ -1,9 +1,11 @@
 """
 该文件存放调用yt-dlp进行解析的函数与类
 """
-from yt_dlp import YoutubeDL
-import platform
 import os
+import platform
+
+from yt_dlp import YoutubeDL
+
 
 def extract_info(url, logger):
     ydl_opts = {

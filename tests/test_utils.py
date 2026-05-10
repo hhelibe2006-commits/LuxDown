@@ -1,6 +1,8 @@
 import sys
-from src.utils import is_url, text_to_list
+
 from PySide6.QtWidgets import QPlainTextEdit, QApplication
+
+from src.utils import is_url, text_to_list
 
 
 def test_is_url():

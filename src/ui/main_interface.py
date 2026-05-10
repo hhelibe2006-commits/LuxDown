@@ -7,12 +7,12 @@ from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtCore import Slot, Signal, QObject
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QProgressBar, \
-    QListWidget, QLabel, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog
 
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
+from ui.download_task_widget import DownloadTaskWidget, SignalEmitter
 from ui.parser_interface import DownloadDialog
 from ui.settings_interface import SettingsInterface
 
@@ -31,50 +31,6 @@ class MyLogger(QObject):
 
     def info(self, msg):
         self.log_signal.emit(msg)
-class SignalEmitter(QObject):
-    parse_finished = Signal(tuple)
-    download_start = Signal(object, object)
-    progress_update = Signal(object)
-    download_finished = Signal(object)
-
-class DownloadTaskWidget(QWidget):
-    def __init__(self, signal, title):
-        super().__init__()
-        self.list_item = None
-        self.is_cancelled = False
-        self.is_dual_download = False
-        self.external_emitter = signal
-        self.emitter = SignalEmitter()
-        self.hbox = QHBoxLayout()
-        self.label = QLabel(title)
-        self.hbox.addWidget(self.label)
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(0)
-        self.hbox.addWidget(self.progress_bar)
-        self.button = QPushButton(self.tr("取消"))
-        self.hbox.addWidget(self.button)
-        self.setLayout(self.hbox)
-        self.button.clicked.connect(self.on_cancel_clicked)
-        self.emitter.progress_update.connect(self.update_progress)
-
-
-    @Slot()
-    def on_cancel_clicked(self):
-        self.is_cancelled = True
-        self.external_emitter.download_finished.emit(self.list_item)
-
-    def update_progress(self, value):
-        self.progress_bar.setValue(value)
-
-    def progress_hook(self, d):
-        if self.is_cancelled:
-            raise
-        if d['status'] == 'downloading':
-            self.emitter.progress_update.emit(d['_percent'])
-        elif d['status'] == 'finished':
-            if not self.is_dual_download:
-                self.external_emitter.download_finished.emit(self.list_item)
-            self.is_dual_download = False
 
 class MainInterface(QMainWindow):
     """
@@ -93,16 +49,41 @@ class MainInterface(QMainWindow):
         self.list_widget = QListWidget()
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.download_executor = ThreadPoolExecutor()
+        self.check_update_executor = ThreadPoolExecutor(max_workers=1)
         self.emitter = SignalEmitter()
         self.emitter.parse_finished.connect(self.on_parse_finished)
         self.emitter.download_start.connect(self.start_download)
         self.emitter.download_finished.connect(self.remove_task_item)
+        self.emitter.check_update.connect(self.ui_tra)
         self.logger.log_signal.connect(self.append_log_text)
 
     def closeEvent(self, event):
         self.executor.shutdown(wait=False)
         self.download_executor.shutdown(wait=False)
+        self.check_update_executor.shutdown(wait=False)
         super().closeEvent(event)
+
+    @Slot()
+    def ui_tra(self, str, url):
+        print(1)
+        reply = QMessageBox(self)
+        if str == 'err':
+            reply.setWindowTitle('检测更新')
+            reply.setText('无法连接到更新服务器，请检查网络。')
+            reply.exec()
+        elif str:
+            reply.setWindowTitle('有新版本')
+            reply.setText('是否下载')
+            reply.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+            an = reply.exec()
+            if an == QMessageBox.StandardButton.Ok:
+                from PySide6.QtGui import QDesktopServices
+                from PySide6.QtCore import QUrl
+                QDesktopServices.openUrl(QUrl(url))
+        else:
+            reply.setWindowTitle('检测更新')
+            reply.setText('已是最新版本')
+            reply.exec()
 
     def initialize(self):
         self._initialize_parsing_box()
@@ -135,12 +116,18 @@ class MainInterface(QMainWindow):
                 with open('cookies.txt', 'w', encoding='utf-8') as f:
                     f.write(date.read())
 
+    @Slot()
+    def check_update(self):
+        if len([t for t in self.check_update_executor._threads if t.is_alive()]):
+            return
+        self.check_update_executor.submit(check_update, self.emitter.check_update)
+
     def _initialize_help_menu_bar(self):
         help_menu = self.menu_bar.addMenu(self.tr("帮助"))
         up_date=help_menu.addAction(self.tr("检查更新"))
         help_menu.addAction(self.tr("关于"))
         help_menu.addAction(self.tr("帮助"))
-        up_date.triggered.connect(check_update)
+        up_date.triggered.connect(self.check_update)
 
     def _initialize_parsing_box(self):
         self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
