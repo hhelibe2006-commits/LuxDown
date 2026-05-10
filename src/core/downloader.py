@@ -1,9 +1,10 @@
 """
 该文件存放调用yt-dlp进行下载的函数与类
 """
-import yt_dlp
 import os
 import platform
+
+import yt_dlp
 
 
 def download(url, progress_hook, index, settings, logger):
