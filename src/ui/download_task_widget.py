@@ -3,13 +3,7 @@ import threading
 from PySide6.QtCore import Signal, QObject, Slot
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QProgressBar, QPushButton
 
-
-class SignalEmitter(QObject):
-    parse_finished : Signal = Signal(tuple)
-    download_start : Signal = Signal(object, object)
-    progress_update : Signal = Signal(object)
-    download_finished : Signal = Signal(object)
-    check_update : Signal = Signal(object, object)
+from signal import SignalEmitter
 
 class DownloadTaskWidget(QWidget):
     def __init__(self, signal : SignalEmitter, title : str) -> None:

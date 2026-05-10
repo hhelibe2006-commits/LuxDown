@@ -1,6 +1,6 @@
-VERSION="v1.0.0"
 import requests
 from packaging import version
+VERSION="v1.0.0"
 
 def check_update(signal) -> None:
     api_url="https://api.github.com/repos/hhelibe2006-commits/LuxDown/releases/latest"
