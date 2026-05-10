@@ -4,35 +4,21 @@
 from concurrent.futures import ThreadPoolExecutor
 
 # pylint: disable=no-name-in-module
-from PySide6.QtCore import Slot, Signal, QObject
+from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, \
     QMenuBar, QMenu
-
+from signal import MyLogger
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
 from ui.download_task_widget import DownloadTaskWidget, SignalEmitter
 from ui.parser_interface import DownloadDialog
 from ui.settings_interface import SettingsInterface
+from widegs import MessageBox
 
-
-class MyLogger(QObject):
-    log_signal : Signal = Signal(str)
-
-    def debug(self, msg) -> None:
-        self.log_signal.emit(msg)
-
-    def warning(self, msg) -> None:
-        self.log_signal.emit(msg)
-
-    def error(self, msg) -> None:
-        self.log_signal.emit(f'<span style="color: red;">{msg}</span>')
-
-    def info(self, msg) -> None:
-        self.log_signal.emit(msg)
 
 class MainInterface(QMainWindow):
     """
@@ -62,24 +48,21 @@ class MainInterface(QMainWindow):
 
     @Slot(str, str)
     def ui_tra(self, string : str, url : str) -> None:
-        reply : QMessageBox = QMessageBox(self)
         if string == 'err':
-            reply.setWindowTitle('检测更新')
-            reply.setText('无法连接到更新服务器，请检查网络。')
-            reply.exec()
+            MessageBox(self, title='检测更新', text='无法连接到更新服务器，请检查网络。').exec()
         elif string:
-            reply.setWindowTitle('有新版本')
-            reply.setText('是否下载')
-            reply.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
-            an = reply.exec()
-            if an == QMessageBox.StandardButton.Ok:
+            reply : int = MessageBox(
+                self,
+                title='有新版本',
+                text='是否下载',
+                buttons=QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+            ).exec()
+            if reply == QMessageBox.StandardButton.Ok:
                 from PySide6.QtGui import QDesktopServices
                 from PySide6.QtCore import QUrl
                 QDesktopServices.openUrl(QUrl(url))
         else:
-            reply.setWindowTitle('检测更新')
-            reply.setText('已是最新版本')
-            reply.exec()
+            MessageBox(self, title='检测更新', text='已是最新版本').exec()
 
     def initialize(self) -> None:
         self.signal_binding()
@@ -104,7 +87,12 @@ class MainInterface(QMainWindow):
         d.triggered.connect(self.clear_cookies)
 
     def clear_cookies(self) -> None:
-        reply : QMessageBox.StandardButton = QMessageBox.question(self, '确认', '是否删除', QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+        reply = MessageBox(
+            self,
+            title='确认',
+            text='是否删除',
+            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
         if reply == QMessageBox.StandardButton.No:
             return
         with open('cookies.txt', 'w', encoding='utf-8') as f:
@@ -189,7 +177,10 @@ class MainInterface(QMainWindow):
         for index in urls.keys() & titles.keys():
             list_item : QListWidgetItem = QListWidgetItem(self.list_widget)
             task_widget : DownloadTaskWidget = DownloadTaskWidget(self.emitter, titles[index])
-            task_widget.is_dual_download = self.settings_dialog.settings_information.download_audio and self.settings_dialog.settings_information.download_video
+            task_widget.is_dual_download = (
+                    self.settings_dialog.settings_information.download_audio and
+                    self.settings_dialog.settings_information.download_video
+            )
             task_widget.list_item = list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)

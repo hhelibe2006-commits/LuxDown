@@ -7,6 +7,7 @@ import sys
 from PySide6.QtGui import QIcon
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QApplication
+from qt_material import apply_stylesheet
 
 from src.ui import MainInterface
 
@@ -17,7 +18,7 @@ def main():
     进行主界面的创建与显示，并指定应用图标
     """
     app=QApplication(sys.argv)
-    app.setStyle('Fusion')
+    apply_stylesheet(app, theme="dark_teal.xml", extra = {'density_scale' : '0'})
     windows=MainInterface()
     windows.setWindowIcon(QIcon("LuxDown.png"))
     windows.initialize()
