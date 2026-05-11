@@ -21,7 +21,7 @@ def extract_info(url, logger, cookies) -> tuple[None] | tuple[list[dict], str | 
             return tuple()
         desired_keys : list = [
             'title', 'id', 'description', 'ext', 'duration_string',
-            'filesize_approx', 'webpage_url'
+            'filesize_approx', 'webpage_url', 'formats'
         ]
         entries = []
         if info.get('_type') is not None:

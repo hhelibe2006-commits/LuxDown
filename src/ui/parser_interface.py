@@ -1,7 +1,7 @@
 from PySide6.QtCore import QUrl, Slot
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
-    QHeaderView, QPushButton
+    QHeaderView, QPushButton, QComboBox
 
 from utils import set_window_size, center_ui
 from .download_task_widget import SignalEmitter
@@ -17,7 +17,7 @@ class DownloadDialog(QDialog):
         self.webEngineView : QWebEngineView = QWebEngineView()
         self.right_panel_layout : QVBoxLayout = QVBoxLayout()
         self.description_browser : QTextBrowser = QTextBrowser()
-        self.video_table : QTableWidget = QTableWidget(len(parse_result[0]), 4)
+        self.video_table : QTableWidget = QTableWidget(len(parse_result[0]), 5)
         self.initialize(parse_result)
 
     def initialize(self, parse_result : tuple) -> None:
@@ -39,13 +39,20 @@ class DownloadDialog(QDialog):
         self.main_layout.addLayout(self.top_area_layout)
 
     def _initialize_video_table(self, parse_result : tuple) -> None:
-        self.video_table.setHorizontalHeaderLabels(['', self.tr('标题'), self.tr('时长'), self.tr('链接')])
+        self.video_table.setHorizontalHeaderLabels(['', self.tr('标题'),self.tr("分辨率"), self.tr('时长'), self.tr('链接')])
         self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         for row in range(len(parse_result[0])):
             self.video_table.setCellWidget(row, 0, QCheckBox())
             self.video_table.setCellWidget(row, 1, QLabel(parse_result[0][row].get('title')))
-            self.video_table.setCellWidget(row, 2, QLabel(parse_result[0][row].get('duration_string')))
-            self.video_table.setCellWidget(row, 3, QLabel(parse_result[0][row].get('webpage_url')))
+            combo_box = QComboBox()
+            li = (None,'(origina)', 'storyboard')
+            resolution = [i.get('format_note') for i in parse_result[0][row].get('formats') if i.get('format_note') is not None and i.get('format_note')[-1] == 'p']
+            resolution = list(dict.fromkeys(resolution))
+            resolution.reverse()
+            combo_box.addItems(resolution)
+            self.video_table.setCellWidget(row, 2, combo_box)
+            self.video_table.setCellWidget(row, 3, QLabel(parse_result[0][row].get('duration_string')))
+            self.video_table.setCellWidget(row, 4, QLabel(parse_result[0][row].get('webpage_url')))
         self.main_layout.addWidget(self.video_table)
 
     def _initialize_main_layout(self) -> None:
@@ -68,8 +75,9 @@ class DownloadDialog(QDialog):
 
     @Slot()
     def download(self) -> None:
-        urls : dict = {i : self.video_table.cellWidget(i, 3).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
+        urls : dict = {i : self.video_table.cellWidget(i, 4).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
         title : dict = {i : self.video_table.cellWidget(i, 1).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
-        self.notifier.download_start.emit(title, urls)
+        resolution : dict = {i : self.video_table.cellWidget(i, 2).currentText() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
+        self.notifier.download_start.emit(title, urls, resolution)
         self.close()
 
