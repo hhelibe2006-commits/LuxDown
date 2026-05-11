@@ -3,11 +3,10 @@
 """
 import os
 import platform
-
 from yt_dlp import YoutubeDL
 
 
-def extract_info(url, logger) -> tuple[list]:
+def extract_info(url, logger) -> tuple[None] | tuple[list[dict], str | None, str | None, str | None]:
     ydl_opts : dict = {
         'logger': logger,
         'max_sleep_interval': 30,
@@ -30,4 +29,4 @@ def extract_info(url, logger) -> tuple[list]:
                 entries.append({key: value for key,value in entry.items() if key in desired_keys})
         else:
             entries.append({key: info[key] for key in desired_keys if key in info})
-        return entries,info.get("description"), info.get('title'), info.get('thumbnail')
+        return entries, info.get("description"), info.get('title'), info.get('thumbnail')

@@ -2,7 +2,7 @@
 该文件存放主界面的类
 """
 from concurrent.futures import ThreadPoolExecutor
-
+from typing import Union
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
@@ -36,7 +36,7 @@ class MainInterface(QMainWindow):
         self.settings_dialog : SettingsInterface = SettingsInterface(self)
         self.list_widget : QListWidget = QListWidget()
         self.executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.download_executor : ThreadPoolExecutor = ThreadPoolExecutor()
+        self.download_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=3)
         self.check_update_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
         self.emitter : SignalEmitter = SignalEmitter()
 
@@ -153,14 +153,14 @@ class MainInterface(QMainWindow):
             if is_url(url):
                 self.executor.submit(self._parse_url_in_thread, url)
             else:
-                pass
+                MessageBox(self, title=self.tr('该条目不是链接'), text=self.tr(f'{url}不是链接')).exec()
 
     def _parse_url_in_thread(self, url : str) -> None:
-        parsed : tuple = extract_info(url, self.logger)
+        parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] = extract_info(url, self.logger)
         self.emitter.parse_finished.emit(parsed)
 
-    @Slot(tuple)
-    def on_parse_finished(self, parsed : tuple ) -> None:
+    @Slot(Union[tuple[()], tuple[list[dict], *tuple[str | None, ...]]])
+    def on_parse_finished(self, parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] ) -> None:
         download_dialog : DownloadDialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 
@@ -193,4 +193,5 @@ class MainInterface(QMainWindow):
             widget : QWidget = self.list_widget.itemWidget(item)
             if widget is not None:
                 widget.deleteLater()
-            self.list_widget.takeItem(row)
+            taken_item = self.list_widget.takeItem(row)
+            del taken_item
