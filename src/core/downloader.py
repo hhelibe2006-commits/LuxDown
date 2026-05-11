@@ -9,7 +9,7 @@ import yt_dlp
 from information import SettingsManager
 
 
-def download(url : str, progress_hook : Callable, index : str, settings : SettingsManager, logger) -> bool:
+def download(url : str, progress_hook : Callable, index : str, settings : SettingsManager, logger, resolution : str) -> bool:
     ydl_opts = {
         "logger": logger,
         "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
@@ -19,6 +19,7 @@ def download(url : str, progress_hook : Callable, index : str, settings : Settin
         'retries': 10,
         'fragment_retries': 3,
         'cookiefile': settings.cookies_file,
+        'format_sort' : [f'res:{resolution[:-2]}']
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'

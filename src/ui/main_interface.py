@@ -2,14 +2,13 @@
 该文件存放主界面的类
 """
 from concurrent.futures import ThreadPoolExecutor
-from typing import Union
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, \
-    QMenuBar, QMenu
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
+    QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, QMenu
 from signal import MyLogger
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, \
@@ -156,11 +155,15 @@ class MainInterface(QMainWindow):
                 MessageBox(self, title=self.tr('该条目不是链接'), text=self.tr(f'{url}不是链接')).exec()
 
     def _parse_url_in_thread(self, url : str) -> None:
-        parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] = extract_info(url, self.logger, self.settings_dialog.settings_information.cookies_file)
+        parsed : tuple = extract_info(
+            url,
+            self.logger,
+            self.settings_dialog.settings_information.cookies_file
+        )
         self.emitter.parse_finished.emit(parsed)
 
     @Slot(tuple)
-    def on_parse_finished(self, parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None]) -> None:
+    def on_parse_finished(self, parsed : tuple) -> None:
         download_dialog : DownloadDialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 
@@ -172,9 +175,9 @@ class MainInterface(QMainWindow):
         hbox.addWidget(self.text_edit)
         hbox.addWidget(self.parse_button)
 
-    @Slot(dict, dict)
-    def start_download(self, titles : dict, urls : dict) -> None:
-        for index in urls.keys() & titles.keys():
+    @Slot(dict, dict, dict)
+    def start_download(self, titles : dict, urls : dict, resolution : dict) -> None:
+        for index in urls.keys() & titles.keys() & resolution.keys():
             list_item : QListWidgetItem = QListWidgetItem(self.list_widget)
             task_widget : DownloadTaskWidget = DownloadTaskWidget(self.emitter, titles[index])
             task_widget.is_dual_download = (
@@ -184,7 +187,15 @@ class MainInterface(QMainWindow):
             task_widget.list_item = list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
-            self.download_executor.submit(download, urls[index], task_widget.progress_hook, index, self.settings_dialog.settings_information, self.logger)
+            self.download_executor.submit(
+                download,
+                urls[index],
+                task_widget.progress_hook,
+                index,
+                self.settings_dialog.settings_information,
+                self.logger,
+                resolution[index]
+            )
 
     @Slot(QListWidgetItem)
     def remove_task_item(self, item : QListWidgetItem) -> None:

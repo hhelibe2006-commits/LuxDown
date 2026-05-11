@@ -4,7 +4,8 @@ version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
     "astroid>=4.1.2",
-    "nuitka>=4.0.8",
+    "idna==3.14",
+    "nuitka==4.1",
     "packaging>=26.2",
     "pyside6>=6.11.0",
     "qt-material>=2.17",
