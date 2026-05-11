@@ -6,11 +6,11 @@ import platform
 from yt_dlp import YoutubeDL
 
 
-def extract_info(url, logger) -> tuple[None] | tuple[list[dict], str | None, str | None, str | None]:
+def extract_info(url, logger, cookies) -> tuple[None] | tuple[list[dict], str | None, str | None, str | None]:
     ydl_opts : dict = {
         'logger': logger,
         'max_sleep_interval': 30,
-        'cookiefile': 'cookies.txt',
+        'cookiefile': cookies,
                 }
     if platform.system() == 'Windows':
         ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')

@@ -95,14 +95,14 @@ class MainInterface(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.No:
             return
-        with open('cookies.txt', 'w', encoding='utf-8') as f:
+        with open(self.settings_dialog.settings_information.cookies_file, 'w', encoding='utf-8') as f:
             f.write('')
 
     def import_cookies(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self)
         if file:
             with open(file, 'r', encoding='utf-8') as date:
-                with open('cookies.txt', 'w', encoding='utf-8') as f:
+                with open(self.settings_dialog.settings_information.cookies_file, 'w', encoding='utf-8') as f:
                     f.write(date.read())
 
     @Slot()
@@ -156,11 +156,11 @@ class MainInterface(QMainWindow):
                 MessageBox(self, title=self.tr('该条目不是链接'), text=self.tr(f'{url}不是链接')).exec()
 
     def _parse_url_in_thread(self, url : str) -> None:
-        parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] = extract_info(url, self.logger)
+        parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] = extract_info(url, self.logger, self.settings_dialog.settings_information.cookies_file)
         self.emitter.parse_finished.emit(parsed)
 
-    @Slot(Union[tuple[()], tuple[list[dict], *tuple[str | None, ...]]])
-    def on_parse_finished(self, parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None] ) -> None:
+    @Slot(tuple)
+    def on_parse_finished(self, parsed : tuple[None] | tuple[list[dict], str | None, str | None, str | None]) -> None:
         download_dialog : DownloadDialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 

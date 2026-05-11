@@ -18,7 +18,7 @@ def download(url : str, progress_hook : Callable, index : str, settings : Settin
         'socket_timeout': 30,
         'retries': 10,
         'fragment_retries': 3,
-        'cookiefile': 'cookies.txt',
+        'cookiefile': settings.cookies_file,
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
