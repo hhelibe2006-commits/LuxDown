@@ -3,10 +3,13 @@
 """
 import os
 import platform
+from typing import Any
 from yt_dlp import YoutubeDL
+from signal import MyLogger
 
 
-def extract_info(url, logger, cookies) -> tuple[None] | tuple[list[dict], str | None, str | None, str | None]:
+def extract_info(url : str, logger : MyLogger, cookies : str)\
+        -> tuple[Any] | tuple[list[Any], str | None, str | None, str | None]:
     ydl_opts : dict = {
         'logger': logger,
         'max_sleep_interval': 30,

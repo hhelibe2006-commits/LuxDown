@@ -84,8 +84,8 @@ class SettingsInterface(QDialog):
         self.vbox.addLayout(hbox)
 
     def _initialize_format(self) -> None:
-        self.audio_combobox.addItems(self.settings_information.audio)
-        self.video_combobox.addItems(self.settings_information.video)
+        self.audio_combobox.addItems(self.settings_information.audio_formats)
+        self.video_combobox.addItems(self.settings_information.video_formats)
         self.audio_combobox.setCurrentText(self.settings_information.current_audio_format)
         self.video_combobox.setCurrentText(self.settings_information.current_video_format)
         self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
