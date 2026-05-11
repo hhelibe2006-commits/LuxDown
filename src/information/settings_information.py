@@ -2,8 +2,10 @@
 该文件存放调用json进行设置存储的函数与类
 """
 import json
-from typing import cast
 from pathlib import Path
+from typing import cast
+from http import cookiejar
+from utils import get_config_dir
 
 class SettingsManager:
     """
@@ -17,7 +19,8 @@ class SettingsManager:
         self.current_video_format : str = "mp4"
         self.download_audio : bool = True
         self.download_video : bool = True
-        self.settings_file : str = "settings.json"
+        self.settings_file : str = str(get_config_dir() / "settings.json")
+        self.cookies_file : str = str(get_config_dir() / "cookies.txt")
         self.load_from_file()
 
     def load_from_file(self) -> None:
@@ -27,6 +30,10 @@ class SettingsManager:
                 self._update_from_dict(data)
         else:
             self._create_default_config()
+
+        if not Path(self.cookies_file).exists():
+            cj = cookiejar.MozillaCookieJar(self.cookies_file)
+            cj.save(ignore_discard=True, ignore_expires=True)
 
     def _create_default_config(self) -> None:
         data : dict = {
