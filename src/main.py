@@ -12,13 +12,13 @@ from qt_material import apply_stylesheet
 from src.ui import MainInterface
 
 
-def main():
+def main() -> None:
     """
     主函数
     进行主界面的创建与显示，并指定应用图标
     """
     app=QApplication(sys.argv)
-    apply_stylesheet(app, theme="dark_teal.xml", extra = {'density_scale' : '0'})
+    apply_stylesheet(app, theme="dark_cyan.xml", extra = {'density_scale' : '0'})
     windows=MainInterface()
     windows.setWindowIcon(QIcon("LuxDown.png"))
     windows.initialize()
