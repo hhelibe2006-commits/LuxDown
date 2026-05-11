@@ -7,9 +7,15 @@ import platform
 
 import yt_dlp
 from information import SettingsManager
+from signal import MyLogger
 
 
-def download(url : str, progress_hook : Callable, index : str, settings : SettingsManager, logger, resolution : str) -> bool:
+def download(url : str,
+             progress_hook : Callable[[dict], None],
+             index : str,
+             settings : SettingsManager,
+             logger : MyLogger,
+             resolution : str) -> bool:
     ydl_opts = {
         "logger": logger,
         "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
@@ -41,6 +47,6 @@ def download(url : str, progress_hook : Callable, index : str, settings : Settin
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
         try:
             ydl.download([url])
-        except Exception as e:
-            raise e
+        except Exception:
+            raise
     return True
