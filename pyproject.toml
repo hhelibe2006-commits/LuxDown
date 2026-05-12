@@ -9,7 +9,7 @@ dependencies = [
     "packaging>=26.2",
     "pyside6>=6.11.0",
     "qt-material>=2.17",
-    "requests>=2.33.1",
+    "requests==2.34.0",
     "yt-dlp>=2026.3.17",
     "yt-dlp-ejs>=0.8.0",
 ]
