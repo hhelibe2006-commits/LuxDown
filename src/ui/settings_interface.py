@@ -25,6 +25,7 @@ class SettingsInterface(QDialog):
         self.video_box : QCheckBox = QCheckBox(self.tr("视频"))
         self.audio_combobox : QComboBox = QComboBox()
         self.video_combobox : QComboBox = QComboBox()
+        self.language_combobox : QComboBox = QComboBox()
         self.path_button : QPushButton = QPushButton(self.tr("选择路径"))
         self.apply_button : QPushButton = QPushButton(self.tr("保存"))
         self.cancel_button : QPushButton = QPushButton(self.tr("取消"))
