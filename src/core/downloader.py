@@ -16,6 +16,7 @@ def download(url : str,
              settings : SettingsManager,
              logger : MyLogger,
              resolution : str) -> bool:
+    print(resolution)
     ydl_opts = {
         "logger": logger,
         "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
@@ -25,7 +26,7 @@ def download(url : str,
         'retries': 10,
         'fragment_retries': 3,
         'cookiefile': settings.cookies_file,
-        'format_sort' : [f'res:{resolution[:-2]}']
+        'format_sort' : [f'res:{resolution.split('x')[-1]}']
     }
     if settings.download_audio and settings.download_video:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'

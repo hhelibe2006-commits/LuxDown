@@ -45,8 +45,7 @@ class DownloadDialog(QDialog):
             self.video_table.setCellWidget(row, 0, QCheckBox())
             self.video_table.setCellWidget(row, 1, QLabel(parse_result[0][row].get('title')))
             combo_box = QComboBox()
-            li = (None,'(origina)', 'storyboard')
-            resolution = [i.get('format_note') for i in parse_result[0][row].get('formats') if i.get('format_note') is not None and i.get('format_note')[-1] == 'p']
+            resolution = [i.get('resolution') for i in parse_result[0][row].get("formats") if i.get('resolution') != 'audio only']
             resolution = list(dict.fromkeys(resolution))
             resolution.reverse()
             combo_box.addItems(resolution)
