@@ -9,7 +9,7 @@ from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QPushButton, QFileDialog, QComboBox, QSizePolicy, QCheckBox, QMainWindow
 
-from src.information import SettingsManager
+from src.information import settings_manager
 from src.utils import set_window_size, center_ui
 
 
@@ -29,7 +29,6 @@ class SettingsInterface(QDialog):
         self.path_button : QPushButton = QPushButton(self.tr("选择路径"))
         self.apply_button : QPushButton = QPushButton(self.tr("保存"))
         self.cancel_button : QPushButton = QPushButton(self.tr("取消"))
-        self.settings_information : SettingsManager = SettingsManager()
         self.initialize()
 
     def initialize(self) -> None:
@@ -40,13 +39,13 @@ class SettingsInterface(QDialog):
         self._initialize_buttons()
 
     def synchronous(self) -> None:
-        self.path_input.setText(self.settings_information.default_download_dir)
+        self.path_input.setText(settings_manager.default_download_dir)
 
-        self.audio_box.setChecked(self.settings_information.download_audio)
-        self.video_box.setChecked(self.settings_information.download_video)
+        self.audio_box.setChecked(settings_manager.download_audio)
+        self.video_box.setChecked(settings_manager.download_video)
 
-        self.audio_combobox.setCurrentText(self.settings_information.current_audio_format)
-        self.video_combobox.setCurrentText(self.settings_information.current_video_format)
+        self.audio_combobox.setCurrentText(settings_manager.current_audio_format)
+        self.video_combobox.setCurrentText(settings_manager.current_video_format)
 
     def _initialize_buttons(self) -> None:
         self.apply_button.clicked.connect(self._on_apply_button)
@@ -66,7 +65,7 @@ class SettingsInterface(QDialog):
     def _initialize_path(self) -> None:
         self.path_input.setPlaceholderText(self.tr("下载路径"))
         self.path_button.clicked.connect(self._choose_dir)
-        self.path_input.setText(self.settings_information.default_download_dir)
+        self.path_input.setText(settings_manager.default_download_dir)
         hbox : QHBoxLayout = QHBoxLayout()
         hbox.addWidget(self.path_input)
         hbox.addWidget(self.path_button)
@@ -76,8 +75,8 @@ class SettingsInterface(QDialog):
     def _initialize_download_content(self) -> None:
         self.audio_box.setCheckable(True)
         self.video_box.setCheckable(True)
-        self.audio_box.setChecked(self.settings_information.download_audio)
-        self.video_box.setChecked(self.settings_information.download_video)
+        self.audio_box.setChecked(settings_manager.download_audio)
+        self.video_box.setChecked(settings_manager.download_video)
         hbox : QHBoxLayout = QHBoxLayout()
         hbox.addWidget(self.audio_box)
         hbox.addWidget(self.video_box)
@@ -85,10 +84,10 @@ class SettingsInterface(QDialog):
         self.vbox.addLayout(hbox)
 
     def _initialize_format(self) -> None:
-        self.audio_combobox.addItems(self.settings_information.audio_formats)
-        self.video_combobox.addItems(self.settings_information.video_formats)
-        self.audio_combobox.setCurrentText(self.settings_information.current_audio_format)
-        self.video_combobox.setCurrentText(self.settings_information.current_video_format)
+        self.audio_combobox.addItems(settings_manager.audio_formats)
+        self.video_combobox.addItems(settings_manager.video_formats)
+        self.audio_combobox.setCurrentText(settings_manager.current_audio_format)
+        self.video_combobox.setCurrentText(settings_manager.current_video_format)
         self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.video_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.vbox.addWidget(QLabel(self.tr("格式选择")))
@@ -114,7 +113,7 @@ class SettingsInterface(QDialog):
             "on_audio": self.audio_box.isChecked(),
             "on_video": self.video_box.isChecked(),
         }
-        revise : SettingsInterface.ReviseSettings = self.ReviseSettings(self.settings_information.apply_settings, dict_settings)
+        revise : SettingsInterface.ReviseSettings = self.ReviseSettings(settings_manager.apply_settings, dict_settings)
         QThreadPool.globalInstance().start(revise)
         self.close()
 

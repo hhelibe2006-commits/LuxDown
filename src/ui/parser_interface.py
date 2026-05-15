@@ -74,9 +74,21 @@ class DownloadDialog(QDialog):
 
     @Slot()
     def download(self) -> None:
-        urls : dict = {i : self.video_table.cellWidget(i, 4).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
-        title : dict = {i : self.video_table.cellWidget(i, 1).text() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
-        resolution : dict = {i : self.video_table.cellWidget(i, 2).currentText() for i in range(self.video_table.rowCount()) if self.video_table.cellWidget(i, 0).isChecked()}
+        urls : dict = {
+            i : self.video_table.cellWidget(i, 4).text()
+            for i in range(self.video_table.rowCount())
+            if self.video_table.cellWidget(i, 0).isChecked()
+        }
+        title : dict = {
+            i : self.video_table.cellWidget(i, 1).text()
+            for i in range(self.video_table.rowCount())
+            if self.video_table.cellWidget(i, 0).isChecked()
+        }
+        resolution : dict = {
+            i : self.video_table.cellWidget(i, 2).currentText()
+            for i in range(self.video_table.rowCount())
+            if self.video_table.cellWidget(i, 0).isChecked()
+        }
         self.notifier.download_start.emit(title, urls, resolution)
         self.close()
 

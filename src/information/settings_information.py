@@ -2,10 +2,12 @@
 该文件存放调用json进行设置存储的函数与类
 """
 import json
+from http import cookiejar
 from pathlib import Path
 from typing import Any, cast
-from http import cookiejar
+
 from utils import get_config_dir
+
 
 class SettingsManager:
     """
@@ -75,3 +77,5 @@ class SettingsManager:
 
         if isinstance(settings.get("enable_video"), bool):
             self.download_video = cast(bool, settings.get("enable_video"))
+
+settings_manager : SettingsManager = SettingsManager()

@@ -3,7 +3,6 @@
 """
 import sys
 
-from PySide6.QtCore import QTranslator
 # pylint: disable=no-name-in-module
 from PySide6.QtGui import QIcon
 # pylint: disable=no-name-in-module
@@ -12,6 +11,7 @@ from qt_material import apply_stylesheet
 
 from src.ui import MainInterface
 from utils.locale import on_locale
+
 
 def main() -> None:
     """

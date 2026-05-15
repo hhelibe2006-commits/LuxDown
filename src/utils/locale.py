@@ -1,6 +1,6 @@
-from PySide6.QtCore import QTranslator
 import locale
 
+from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
 

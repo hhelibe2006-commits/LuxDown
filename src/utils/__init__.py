@@ -12,7 +12,7 @@ __all__ = [
 
 from .centered_ui import center_ui
 from .check_update import check_update
+from .get_config_dir import get_config_dir
 from .set_window_size import set_window_size
 from .text_serialization import text_to_list
 from .validate_url import is_url
-from .get_config_dir import get_config_dir

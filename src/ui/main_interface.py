@@ -2,6 +2,7 @@
 该文件存放主界面的类
 """
 from concurrent.futures import ThreadPoolExecutor
+
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
@@ -9,6 +10,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
     QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, QMenu
+
+from information.settings_information import settings_manager
 from signal import MyLogger
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, \
@@ -94,14 +97,14 @@ class MainInterface(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.No:
             return
-        with open(self.settings_dialog.settings_information.cookies_file, 'w', encoding='utf-8') as f:
+        with open(settings_manager.cookies_file, 'w', encoding='utf-8') as f:
             f.write('')
 
     def import_cookies(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self)
         if file:
             with open(file, 'r', encoding='utf-8') as date:
-                with open(self.settings_dialog.settings_information.cookies_file, 'w', encoding='utf-8') as f:
+                with open(settings_manager.cookies_file, 'w', encoding='utf-8') as f:
                     f.write(date.read())
 
     @Slot()
@@ -158,7 +161,7 @@ class MainInterface(QMainWindow):
         parsed : tuple = extract_info(
             url,
             self.logger,
-            self.settings_dialog.settings_information.cookies_file
+            settings_manager.cookies_file
         )
         self.emitter.parse_finished.emit(parsed)
 
@@ -181,8 +184,8 @@ class MainInterface(QMainWindow):
             list_item : QListWidgetItem = QListWidgetItem(self.list_widget)
             task_widget : DownloadTaskWidget = DownloadTaskWidget(self.emitter, titles[index])
             task_widget.is_dual_download = (
-                    self.settings_dialog.settings_information.download_audio and
-                    self.settings_dialog.settings_information.download_video
+                    settings_manager.download_audio and
+                    settings_manager.download_video
             )
             task_widget.list_item = list_item
             list_item.setSizeHint(task_widget.sizeHint())
@@ -192,7 +195,7 @@ class MainInterface(QMainWindow):
                 urls[index],
                 task_widget.progress_hook,
                 index,
-                self.settings_dialog.settings_information,
+                settings_manager,
                 self.logger,
                 resolution[index]
             )
