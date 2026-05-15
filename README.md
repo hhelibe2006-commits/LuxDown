@@ -62,6 +62,9 @@ source venv/bin/activate
 
 # 安装依赖
 pip install .
+
+# 生成多语言文件(unix系统用户使用/)
+pyside6-lrelease .\src\*.ts
 ```
 
 ### 3. 运行
@@ -92,13 +95,72 @@ nuitka --standalone --show-progress --plugin-enable=pyside6 src\main.py --clang 
 执行后会在 `src/main.dist` 或当前目录生成 LuxDown 的独立文件夹。
 
 ### 制作 NSIS 安装程序
-编写 NSIS 脚本，鼠标右键生成，或执行以下命令生成安装包：
+编写 NSIS 脚本，示例如下
+```
+# 1. 定义版本和名称常量
+!define PRODUCT_NAME "LuxDown"
+!define PRODUCT_VERSION "1.0.1"
+!define EXE_NAME "main.exe"
+
+# 引入基础逻辑库
+!include "MUI2.nsh"
+!include "FileFunc.nsh"
+
+RequestExecutionLevel admin
+
+# 2. 设置软件详细信息 (鼠标右键属性可见)
+VIProductVersion "${PRODUCT_VERSION}.0"
+VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey "Comments" "安装包"
+VIAddVersionKey "FileDescription" "视频下载器"
+VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
+VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
+
+Name "${PRODUCT_NAME}"
+OutFile "${PRODUCT_NAME}-${PRODUCT_VERSION}.win-x64.exe"
+InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}" ; 建议64位系统使用 $PROGRAMFILES64
+
+# --- 界面设置 (可选，让安装包更像样) ---
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "SimpChinese"
+
+Section "Install"
+    SetOutPath "$INSTDIR"
+    # 释放文件
+    File /r "C:\Users\hhhhh\PycharmProjects\LuxDown\main.dist\*.*"
+
+    # 创建快捷方式
+    CreateShortcut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${EXE_NAME}" "" "$INSTDIR\LuxDown.ico" 0
+
+    # 写入卸载程序
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+    # --- 注册到控制面板 (卸载列表可见) ---
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\${EXE_NAME}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" "${PRODUCT_VERSION}"
+SectionEnd
+
+Section "Uninstall"
+    # 删除文件
+    RMDir /r "$INSTDIR"
+    # 删除快捷方式
+    Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
+    # 删除注册表信息
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+SectionEnd
+```
+然后鼠标右键生成：
 ```bash
 makensis installer.nsi
 ```
-
 ---
-
 ## 📝 使用说明
 
 1. **添加链接** – 向文本框输入链接，每行一个链接。
