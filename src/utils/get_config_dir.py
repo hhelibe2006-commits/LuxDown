@@ -1,7 +1,8 @@
+import os
 import platform
 from pathlib import Path
 from typing import cast
-import os
+
 
 def get_config_dir(app_name: str = "LuxDown") -> Path:
     if platform.system() == "Windows":

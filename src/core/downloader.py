@@ -1,11 +1,12 @@
 """
 该文件存放调用yt-dlp进行下载的函数与类
 """
-from typing import Callable
 import os
 import platform
+from typing import Callable
 
 import yt_dlp
+
 from information import SettingsManager
 from signal import MyLogger
 

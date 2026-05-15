@@ -1,9 +1,10 @@
 import threading
 
-from PySide6.QtCore import Signal, QObject, Slot
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QProgressBar, QPushButton
 
 from signal import SignalEmitter
+
 
 class DownloadTaskWidget(QWidget):
     def __init__(self, signal : SignalEmitter, title : str) -> None:
