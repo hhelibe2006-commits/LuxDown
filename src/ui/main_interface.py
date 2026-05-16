@@ -1,6 +1,7 @@
 """
 该文件存放主界面的类
 """
+import http.cookiejar
 from concurrent.futures import ThreadPoolExecutor
 
 # pylint: disable=no-name-in-module
@@ -97,8 +98,9 @@ class MainInterface(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.No:
             return
-        with open(settings_manager.cookies_file, 'w', encoding='utf-8') as f:
-            f.write('')
+        cookie_jar = http.cookiejar.MozillaCookieJar(settings_manager.cookies_file)
+        cookie_jar.save(ignore_discard=True, ignore_expires=True)
+
 
     def import_cookies(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self)
