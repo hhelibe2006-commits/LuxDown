@@ -1,29 +1,28 @@
 """
 该文件存放主界面的类
 """
-import http.cookiejar
 from concurrent.futures import ThreadPoolExecutor, Future
 
+from PySide6.QtCore import QUrl
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtGui import QDesktopServices
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
-    QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, QMenu
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, \
+    QMenu
 
 from src.core import extract_info
-from src.core.download_task import DownloadTask
 from src.information import settings_manager
 from src.signal import MyLogger
-from src.ui.download_task_widget import DownloadTaskWidget, SignalEmitter
+from src.ui.download_task_widget import SignalEmitter
+from src.ui.list_widget import ListWidget
 from src.ui.parser_interface import DownloadDialog
 from src.ui.settings_interface import SettingsInterface
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
 from src.widgets import MessageBox
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtCore import QUrl
 
 
 class MainInterface(QMainWindow):
@@ -32,24 +31,22 @@ class MainInterface(QMainWindow):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.text_edit : QTextEdit = QTextEdit()
-        self.plain_text_edit : QPlainTextEdit = QPlainTextEdit()
-        self.parse_button : QPushButton = QPushButton(self.tr("解析"))
-        self.logger : MyLogger = MyLogger()
-        self.main_widget : QWidget = QWidget()
-        self.main_layout : QVBoxLayout = QVBoxLayout()
-        self.menu_bar : QMenuBar = self.menuBar()
-        self.settings_dialog : SettingsInterface = SettingsInterface(self)
-        self.list_widget : QListWidget = QListWidget()
-        self.executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.download_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=3)
-        self.check_update_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.emitter : SignalEmitter = SignalEmitter()
+        self.text_edit: QTextEdit = QTextEdit()
+        self.plain_text_edit: QPlainTextEdit = QPlainTextEdit()
+        self.parse_button: QPushButton = QPushButton(self.tr("解析"))
+        self.logger: MyLogger = MyLogger()
+        self.main_widget: QWidget = QWidget()
+        self.main_layout: QVBoxLayout = QVBoxLayout()
+        self.menu_bar: QMenuBar = self.menuBar()
+        self.settings_dialog: SettingsInterface = SettingsInterface(self)
+        self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
+        self.check_update_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
+        self.emitter: SignalEmitter = SignalEmitter()
+        self.list_widget: ListWidget = ListWidget(self.emitter, self.logger)
         self._check_update_futures: set[Future] = set()
 
-    def closeEvent(self, event : QCloseEvent) -> None:
+    def closeEvent(self, event: QCloseEvent) -> None:
         self.executor.shutdown(wait=False)
-        self.download_executor.shutdown(wait=False)
         self.check_update_executor.shutdown(wait=False)
         super().closeEvent(event)
 
@@ -63,8 +60,8 @@ class MainInterface(QMainWindow):
 
     def _signal_binding(self) -> None:
         self.emitter.parse_finished.connect(self.on_parse_finished)
-        self.emitter.download_start.connect(self.start_download)
-        self.emitter.download_finished.connect(self.remove_task_item)
+        self.emitter.download_start.connect(self.list_widget.start_download)
+        self.emitter.download_finished.connect(self.list_widget.remove_task_item)
         self.emitter.check_update.connect(self.ui_tra)
         self.logger.log_signal.connect(self.append_log_text)
 
@@ -80,14 +77,14 @@ class MainInterface(QMainWindow):
 
     def _initialize_cookies_menu_bar(self) -> None:
         cookies_menu : QMenu = self.menu_bar.addMenu(self.tr("cookies"))
-        w = cookies_menu.addAction(self.tr("导入cookies"))
-        d = cookies_menu.addAction(self.tr("清除cookies"))
+        w: QAction = cookies_menu.addAction(self.tr("导入cookies"))
+        d: QAction = cookies_menu.addAction(self.tr("清除cookies"))
         w.triggered.connect(self.import_cookies)
         d.triggered.connect(self.clear_cookies)
 
     def _initialize_help_menu_bar(self) -> None:
-        help_menu : QMenu = self.menu_bar.addMenu(self.tr("帮助"))
-        up_date : QAction = help_menu.addAction(self.tr("检查更新"))
+        help_menu: QMenu = self.menu_bar.addMenu(self.tr("帮助"))
+        up_date: QAction = help_menu.addAction(self.tr("检查更新"))
         help_menu.addAction(self.tr("关于"))
         help_menu.addAction(self.tr("帮助"))
         up_date.triggered.connect(self.check_update)
@@ -101,7 +98,7 @@ class MainInterface(QMainWindow):
         self.show()
 
     @Slot(str, str)
-    def ui_tra(self, string : str, url : str) -> None:
+    def ui_tra(self, string: str, url: str) -> None:
         if string == 'err':
             MessageBox(self, title='检测更新', text='无法连接到更新服务器，请检查网络。').exec()
         elif string:
@@ -116,7 +113,7 @@ class MainInterface(QMainWindow):
         else:
             MessageBox(self, title='检测更新', text='已是最新版本').exec()
 
-    @Slot
+    @Slot()
     def clear_cookies(self) -> None:
         reply = MessageBox(
             self,
@@ -184,41 +181,3 @@ class MainInterface(QMainWindow):
         hbox.addWidget(self.plain_text_edit)
         hbox.addWidget(self.text_edit)
         hbox.addWidget(self.parse_button)
-
-    @Slot(dict, dict, dict)
-    def start_download(self, titles : dict, urls : dict, resolution : dict) -> None:
-        for index in urls.keys() & titles.keys() & resolution.keys():
-            list_item : QListWidgetItem = QListWidgetItem(self.list_widget)
-            task_widget : DownloadTaskWidget = DownloadTaskWidget(self.emitter, titles[index])
-            task_widget.is_dual_download = (
-                    settings_manager.download_audio and
-                    settings_manager.download_video
-            )
-            task_widget.list_item = list_item
-            list_item.setSizeHint(task_widget.sizeHint())
-            self.list_widget.setItemWidget(list_item,task_widget)
-            def _finished_cb(item=list_item) -> None:
-                # 当任务完成时通知 UI 移除对应的项
-                self.emitter.download_finished.emit(item)
-
-            download_task = DownloadTask(
-                urls[index],
-                index,
-                settings_manager,
-                self.logger,
-                resolution[index],
-                progress_callback=task_widget.progress_hook,
-                finished_callback=_finished_cb,
-            )
-            task_widget.task = download_task
-            self.download_executor.submit(download_task.run)
-
-    @Slot(QListWidgetItem)
-    def remove_task_item(self, item : QListWidgetItem) -> None:
-        row : int = self.list_widget.row(item)
-        if row != -1:
-            widget : QWidget = self.list_widget.itemWidget(item)
-            if widget is not None:
-                widget.deleteLater()
-            taken_item = self.list_widget.takeItem(row)
-            del taken_item
