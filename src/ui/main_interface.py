@@ -2,7 +2,7 @@
 该文件存放主界面的类
 """
 import http.cookiejar
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
@@ -12,14 +12,15 @@ from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
     QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, QMenu
 
+from src.core import extract_info
+from src.core.download_task import DownloadTask
 from src.information import settings_manager
 from src.signal import MyLogger
-from src.core import extract_info, download
-from src.utils import centered_ui, set_window_size, text_to_list, \
-    is_url, check_update
 from src.ui.download_task_widget import DownloadTaskWidget, SignalEmitter
 from src.ui.parser_interface import DownloadDialog
 from src.ui.settings_interface import SettingsInterface
+from src.utils import centered_ui, set_window_size, text_to_list, \
+    is_url, check_update
 from src.widgets import MessageBox
 
 
@@ -42,6 +43,7 @@ class MainInterface(QMainWindow):
         self.download_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=3)
         self.check_update_executor : ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
         self.emitter : SignalEmitter = SignalEmitter()
+        self._check_update_futures: set[Future] = set()
 
     def closeEvent(self, event) -> None:
         self.executor.shutdown(wait=False)
@@ -111,9 +113,14 @@ class MainInterface(QMainWindow):
 
     @Slot()
     def check_update(self) -> None:
-        if len([t for t in self.check_update_executor._threads if t.is_alive()]):
+        # 如果已有未完成的检查任务则跳过
+        if any(not f.done() for f in self._check_update_futures):
             return
-        self.check_update_executor.submit(check_update, self.emitter.check_update)
+
+        fut = self.check_update_executor.submit(check_update, self.emitter.check_update)
+        self._check_update_futures.add(fut)
+        # 在完成时从集合中移除
+        fut.add_done_callback(lambda f: self._check_update_futures.discard(f))
 
     def _initialize_help_menu_bar(self) -> None:
         help_menu : QMenu = self.menu_bar.addMenu(self.tr("帮助"))
@@ -192,15 +199,21 @@ class MainInterface(QMainWindow):
             task_widget.list_item = list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
-            self.download_executor.submit(
-                download,
+            def _finished_cb(success: bool, idx: int | str, item=list_item) -> None:
+                # 当任务完成时通知 UI 移除对应的项
+                self.emitter.download_finished.emit(item)
+
+            download_task = DownloadTask(
                 urls[index],
-                task_widget.progress_hook,
                 index,
                 settings_manager,
                 self.logger,
-                resolution[index]
+                resolution[index],
+                progress_callback=task_widget.progress_hook,
+                finished_callback=_finished_cb,
             )
+            task_widget.task = download_task
+            self.download_executor.submit(download_task.run)
 
     @Slot(QListWidgetItem)
     def remove_task_item(self, item : QListWidgetItem) -> None:
