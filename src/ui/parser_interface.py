@@ -1,10 +1,12 @@
+from typing import cast
+
 from PySide6.QtCore import QUrl, Slot
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
     QHeaderView, QPushButton, QComboBox
 
-from src.utils import set_window_size, center_ui
 from src.ui.download_task_widget import SignalEmitter
+from src.utils import set_window_size, center_ui
 
 
 class DownloadDialog(QDialog):
@@ -74,20 +76,20 @@ class DownloadDialog(QDialog):
 
     @Slot()
     def download(self) -> None:
-        urls : dict[int, str] = {
-            i : self.video_table.cellWidget(i, 4).text()
+        urls: dict[int, str] = {
+            i: cast(QLabel, self.video_table.cellWidget(i, 4)).text()
             for i in range(self.video_table.rowCount())
-            if self.video_table.cellWidget(i, 0).isChecked()
+            if cast(QCheckBox, self.video_table.cellWidget(i, 0)).isChecked()
         }
-        title : dict[int, str] = {
-            i : self.video_table.cellWidget(i, 1).text()
+        title: dict[int, str] = {
+            i: cast(QLabel, self.video_table.cellWidget(i, 1)).text()
             for i in range(self.video_table.rowCount())
-            if self.video_table.cellWidget(i, 0).isChecked()
+            if cast(QCheckBox, self.video_table.cellWidget(i, 0)).isChecked()
         }
-        resolution : dict[int, str] = {
-            i : self.video_table.cellWidget(i, 2).currentText()
+        resolution: dict[int, str] = {
+            i: cast(QComboBox, self.video_table.cellWidget(i, 2)).currentText()
             for i in range(self.video_table.rowCount())
-            if self.video_table.cellWidget(i, 0).isChecked()
+            if cast(QCheckBox, self.video_table.cellWidget(i, 0)).isChecked()
         }
         self.notifier.download_start.emit(title, urls, resolution)
         self.close()

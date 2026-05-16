@@ -1,54 +1,56 @@
 """
 该文件存放调用yt-dlp进行下载的函数与类
 """
-import os
-import platform
+from pathlib import Path
 from typing import Callable
 
 import yt_dlp
 
+from src.core.exceptions import DownloadCancelled
+from src.core.ydl_options import build_ydl_opts
 from src.information import SettingsManager
 from src.signal import MyLogger
 
 
-def download(url : str,
-             progress_hook : Callable[[dict], None],
-             index : str,
-             settings : SettingsManager,
-             logger : MyLogger,
-             resolution : str) -> bool:
-    print(resolution)
-    ydl_opts = {
-        "logger": logger,
-        "outtmpl": f'{os.path.join(settings.default_download_dir, f"{index}-%(title)s.%(ext)s")}',
-        'progress_hooks': [progress_hook],
-        'max_sleep_interval': 5,
-        'socket_timeout': 30,
-        'retries': 10,
-        'fragment_retries': 3,
-        'cookiefile': settings.cookies_file,
-        'format_sort' : [f'res:{resolution.split('x')[-1]}']
-    }
-    if settings.download_audio and settings.download_video:
-        ydl_opts['format'] = 'bestvideo+bestaudio/best'
-        ydl_opts['merge_output_format'] = settings.current_video_format
+def download(url: str,
+             progress_hook: Callable[[dict], None],
+             index: int | str,
+             settings: SettingsManager,
+             logger: MyLogger,
+             resolution: str) -> bool:
+    """
+    下载函数，供给DownloadTask使用，
+    负责下载和返回下载进度给DownloadTask，
+    在出现错误时会返回
+    """
+    # 确保下载目录存在
+    Path(settings.default_download_dir).mkdir(parents=True, exist_ok=True)
 
-    elif settings.download_audio:
-        ydl_opts['format'] = 'bestaudio/best'
-        ydl_opts['merge_output_format'] = settings.current_audio_format
-    elif settings.download_video:
-        ydl_opts['format'] = 'bestvideo'
-        ydl_opts['merge_output_format'] = settings.current_video_format
-    else:
+    # 使用配置构建器集中管理 yt-dlp 配置
+    ydl_opts = build_ydl_opts(settings, logger, index, resolution, progress_hook)
+
+    # 如果没有启用任何格式，直接返回 False
+    if 'format' not in ydl_opts and not (settings.download_audio or settings.download_video):
+        try:
+            logger.error('no download format enabled in settings')
+        except Exception:
+            pass
         return False
-
-    if platform.system() == 'Windows':
-        ydl_opts['ffmpeg_location'] = os.path.join('ffmpeg', 'bin', 'ffmpeg.exe')
-        ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
         try:
             ydl.download([url])
-        except Exception:
-            raise
+        except DownloadCancelled:
+            # 用户取消下载
+            try:
+                logger.info("download cancelled by user")
+            except Exception:
+                pass
+            return False
+        except Exception as exc:  # 捕获并记录其他异常，返回 False
+            try:
+                logger.error(f"download failed: {exc}")
+            except Exception:
+                pass
+            return False
     return True

@@ -1,16 +1,35 @@
+import logging
+
 from PySide6.QtCore import QObject, Signal
+from logging import Logger
 
 class MyLogger(QObject):
-    log_signal : Signal = Signal(str)
+    log_signal: Signal = Signal(str)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._logger : Logger = logging.getLogger('LuxDown')
 
     def debug(self, msg) -> None:
-        self.log_signal.emit(msg)
+        try:
+            self._logger.debug(msg)
+        finally:
+            self.log_signal.emit(str(msg))
 
     def warning(self, msg) -> None:
-        self.log_signal.emit(msg)
+        try:
+            self._logger.warning(msg)
+        finally:
+            self.log_signal.emit(str(msg))
 
     def error(self, msg) -> None:
-        self.log_signal.emit(f'<span style="color: red;">{msg}</span>')
+        try:
+            self._logger.error(msg)
+        finally:
+            self.log_signal.emit(f'<span style="color: red;">{msg}</span>')
 
     def info(self, msg) -> None:
-        self.log_signal.emit(msg)
+        try:
+            self._logger.info(msg)
+        finally:
+            self.log_signal.emit(str(msg))
