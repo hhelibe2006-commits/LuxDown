@@ -22,7 +22,7 @@ class DownloadTask:
         logger: MyLogger,
         resolution: str,
         progress_callback: Optional[Callable[[dict], None]] = None,
-        finished_callback: Optional[Callable[[bool, int | str], None]] = None,
+        finished_callback: Optional[Callable[[], None]] = None,
     ) -> None:
         self.url = url
         self.index = index
@@ -62,7 +62,7 @@ class DownloadTask:
 
         if self._finished_cb:
             try:
-                self._finished_cb(success, self.index)
+                self._finished_cb()
             except Exception as e:
                 try:
                     self.logger.error(f"Exception in finished_callback: {e}")

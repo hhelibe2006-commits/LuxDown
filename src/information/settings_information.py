@@ -78,4 +78,13 @@ class SettingsManager:
         if isinstance(settings.get("enable_video"), bool):
             self.download_video = cast(bool, settings.get("enable_video"))
 
+    def import_cookies(self, file : str) -> None:
+        with open(file, 'r', encoding='utf-8') as date:
+            with open(self.cookies_file, 'w', encoding='utf-8') as f:
+                f.write(date.read())
+
+    def clear_cookies(self) -> None:
+        cookie_jar = cookiejar.MozillaCookieJar(self.cookies_file)
+        cookie_jar.save()
+
 settings_manager : SettingsManager = SettingsManager()
