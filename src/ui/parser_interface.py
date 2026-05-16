@@ -74,17 +74,17 @@ class DownloadDialog(QDialog):
 
     @Slot()
     def download(self) -> None:
-        urls : dict = {
+        urls : dict[int, str] = {
             i : self.video_table.cellWidget(i, 4).text()
             for i in range(self.video_table.rowCount())
             if self.video_table.cellWidget(i, 0).isChecked()
         }
-        title : dict = {
+        title : dict[int, str] = {
             i : self.video_table.cellWidget(i, 1).text()
             for i in range(self.video_table.rowCount())
             if self.video_table.cellWidget(i, 0).isChecked()
         }
-        resolution : dict = {
+        resolution : dict[int, str] = {
             i : self.video_table.cellWidget(i, 2).currentText()
             for i in range(self.video_table.rowCount())
             if self.video_table.cellWidget(i, 0).isChecked()
