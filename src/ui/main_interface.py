@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, Future
 
 # pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
@@ -22,6 +22,8 @@ from src.ui.settings_interface import SettingsInterface
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
 from src.widgets import MessageBox
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QUrl
 
 
 class MainInterface(QMainWindow):
@@ -45,11 +47,58 @@ class MainInterface(QMainWindow):
         self.emitter : SignalEmitter = SignalEmitter()
         self._check_update_futures: set[Future] = set()
 
-    def closeEvent(self, event) -> None:
+    def closeEvent(self, event : QCloseEvent) -> None:
         self.executor.shutdown(wait=False)
         self.download_executor.shutdown(wait=False)
         self.check_update_executor.shutdown(wait=False)
         super().closeEvent(event)
+
+    def initialize(self) -> None:
+        self._signal_binding()
+        self._initialize_parsing_box()
+        self._initialize_menu_bar()
+        self._initialize_cookies_menu_bar()
+        self._initialize_help_menu_bar()
+        self._initialize_windows()
+
+    def _signal_binding(self) -> None:
+        self.emitter.parse_finished.connect(self.on_parse_finished)
+        self.emitter.download_start.connect(self.start_download)
+        self.emitter.download_finished.connect(self.remove_task_item)
+        self.emitter.check_update.connect(self.ui_tra)
+        self.logger.log_signal.connect(self.append_log_text)
+
+    def _initialize_parsing_box(self) -> None:
+        self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
+        self.text_edit.setReadOnly(True)
+        self.parse_button.clicked.connect(self.on_parse_button_clicked)
+        self._setup_input_layout()
+
+    def _initialize_menu_bar(self) -> None:
+        setting_menu : QAction = self.menu_bar.addAction(self.tr("设置"))
+        setting_menu.triggered.connect(self.on_settings)
+
+    def _initialize_cookies_menu_bar(self) -> None:
+        cookies_menu : QMenu = self.menu_bar.addMenu(self.tr("cookies"))
+        w = cookies_menu.addAction(self.tr("导入cookies"))
+        d = cookies_menu.addAction(self.tr("清除cookies"))
+        w.triggered.connect(self.import_cookies)
+        d.triggered.connect(self.clear_cookies)
+
+    def _initialize_help_menu_bar(self) -> None:
+        help_menu : QMenu = self.menu_bar.addMenu(self.tr("帮助"))
+        up_date : QAction = help_menu.addAction(self.tr("检查更新"))
+        help_menu.addAction(self.tr("关于"))
+        help_menu.addAction(self.tr("帮助"))
+        up_date.triggered.connect(self.check_update)
+
+    def _initialize_windows(self) -> None:
+        self.main_layout.addWidget(self.list_widget)
+        self.setWindowTitle(self.tr("LuxDown"))
+        set_window_size(self, ratio= 0.8)
+        centered_ui.center_ui(self)
+        self.main_widget.setLayout(self.main_layout)
+        self.show()
 
     @Slot(str, str)
     def ui_tra(self, string : str, url : str) -> None:
@@ -63,34 +112,11 @@ class MainInterface(QMainWindow):
                 buttons=QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
             ).exec()
             if reply == QMessageBox.StandardButton.Ok:
-                from PySide6.QtGui import QDesktopServices
-                from PySide6.QtCore import QUrl
                 QDesktopServices.openUrl(QUrl(url))
         else:
             MessageBox(self, title='检测更新', text='已是最新版本').exec()
 
-    def initialize(self) -> None:
-        self.signal_binding()
-        self._initialize_parsing_box()
-        self._initialize_menu_bar()
-        self._initialize_cookies_menu_bar()
-        self._initialize_help_menu_bar()
-        self._initialize_windows()
-
-    def signal_binding(self) -> None:
-        self.emitter.parse_finished.connect(self.on_parse_finished)
-        self.emitter.download_start.connect(self.start_download)
-        self.emitter.download_finished.connect(self.remove_task_item)
-        self.emitter.check_update.connect(self.ui_tra)
-        self.logger.log_signal.connect(self.append_log_text)
-
-    def _initialize_cookies_menu_bar(self) -> None:
-        cookies_menu : QMenu = self.menu_bar.addMenu(self.tr("cookies"))
-        w = cookies_menu.addAction(self.tr("导入cookies"))
-        d = cookies_menu.addAction(self.tr("清除cookies"))
-        w.triggered.connect(self.import_cookies)
-        d.triggered.connect(self.clear_cookies)
-
+    @Slot
     def clear_cookies(self) -> None:
         reply = MessageBox(
             self,
@@ -100,16 +126,13 @@ class MainInterface(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.No:
             return
-        cookie_jar = http.cookiejar.MozillaCookieJar(settings_manager.cookies_file)
-        cookie_jar.save(ignore_discard=True, ignore_expires=True)
+        settings_manager.clear_cookies()
 
-
+    @Slot()
     def import_cookies(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self)
         if file:
-            with open(file, 'r', encoding='utf-8') as date:
-                with open(settings_manager.cookies_file, 'w', encoding='utf-8') as f:
-                    f.write(date.read())
+            settings_manager.import_cookies(file)
 
     @Slot()
     def check_update(self) -> None:
@@ -121,31 +144,6 @@ class MainInterface(QMainWindow):
         self._check_update_futures.add(fut)
         # 在完成时从集合中移除
         fut.add_done_callback(lambda f: self._check_update_futures.discard(f))
-
-    def _initialize_help_menu_bar(self) -> None:
-        help_menu : QMenu = self.menu_bar.addMenu(self.tr("帮助"))
-        up_date : QAction = help_menu.addAction(self.tr("检查更新"))
-        help_menu.addAction(self.tr("关于"))
-        help_menu.addAction(self.tr("帮助"))
-        up_date.triggered.connect(self.check_update)
-
-    def _initialize_parsing_box(self) -> None:
-        self.plain_text_edit.setPlaceholderText(self.tr("请输入链接"))
-        self.text_edit.setReadOnly(True)
-        self.parse_button.clicked.connect(self.on_parse_button_clicked)
-        self._setup_input_layout()
-
-    def _initialize_menu_bar(self) -> None:
-        setting_menu : QAction = self.menu_bar.addAction(self.tr("设置"))
-        setting_menu.triggered.connect(self.on_settings)
-
-    def _initialize_windows(self) -> None:
-        self.main_layout.addWidget(self.list_widget)
-        self.setWindowTitle(self.tr("LuxDown"))
-        set_window_size(self, ratio= 0.8)
-        centered_ui.center_ui(self)
-        self.main_widget.setLayout(self.main_layout)
-        self.show()
 
     @Slot(str)
     def append_log_text(self, text : str) -> None:
@@ -199,7 +197,7 @@ class MainInterface(QMainWindow):
             task_widget.list_item = list_item
             list_item.setSizeHint(task_widget.sizeHint())
             self.list_widget.setItemWidget(list_item,task_widget)
-            def _finished_cb(success: bool, idx: int | str, item=list_item) -> None:
+            def _finished_cb(item=list_item) -> None:
                 # 当任务完成时通知 UI 移除对应的项
                 self.emitter.download_finished.emit(item)
 

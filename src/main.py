@@ -18,10 +18,10 @@ def main() -> None:
     主函数
     进行主界面的创建与显示，并指定应用图标
     """
-    app=QApplication(sys.argv)
+    app = QApplication(sys.argv)
     load_translations(app)
     apply_stylesheet(app, theme="dark_cyan.xml", extra = {'density_scale' : '0'})
-    window=MainInterface()
+    window = MainInterface()
     window.setWindowIcon(QIcon("LuxDown.png"))
     window.initialize()
     sys.exit(app.exec())
