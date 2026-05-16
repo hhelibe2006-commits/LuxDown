@@ -1,6 +1,5 @@
-import pytest
-
 from types import SimpleNamespace
+
 from src import build_ydl_opts
 
 

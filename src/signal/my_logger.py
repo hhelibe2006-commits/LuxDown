@@ -1,9 +1,10 @@
 import logging
-
-from PySide6.QtCore import QObject, Signal
 from logging import Logger
 
-class MyLogger(QObject):
+from PySide6.QtCore import QObject, Signal
+
+
+class Logger(QObject):
     log_signal: Signal = Signal(str)
 
     def __init__(self) -> None:

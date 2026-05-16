@@ -17,7 +17,7 @@ class SettingsInterface(QDialog):
     """
     该类为设置界面类
     """
-    def __init__(self, parent : QMainWindow = None) -> None:
+    def __init__(self, parent : QMainWindow) -> None:
         super().__init__(parent)
         self.vbox : QVBoxLayout = QVBoxLayout(self)
         self.path_input : QLineEdit = QLineEdit()

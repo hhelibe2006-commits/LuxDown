@@ -1,4 +1,3 @@
-import pytest
 from types import SimpleNamespace
 
 from src import DownloadTask

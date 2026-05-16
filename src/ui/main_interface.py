@@ -10,19 +10,18 @@ from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtGui import QDesktopServices
 # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, \
-    QMenu
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTextEdit, QMessageBox, QFileDialog, QMenu
 
 from src.core import extract_info
 from src.information import settings_manager
-from src.signal import MyLogger
+from src.signal import Logger
 from src.ui.download_task_widget import SignalEmitter
 from src.ui.list_widget import ListWidget
 from src.ui.parser_interface import DownloadDialog
-from src.ui.settings_interface import SettingsInterface
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
 from src.widgets import MessageBox
+from src.ui.menu_bar import MenuBar
 
 
 class MainInterface(QMainWindow):
@@ -34,11 +33,11 @@ class MainInterface(QMainWindow):
         self.text_edit: QTextEdit = QTextEdit()
         self.plain_text_edit: QPlainTextEdit = QPlainTextEdit()
         self.parse_button: QPushButton = QPushButton(self.tr("解析"))
-        self.logger: MyLogger = MyLogger()
+        self.logger: Logger = Logger()
         self.main_widget: QWidget = QWidget()
         self.main_layout: QVBoxLayout = QVBoxLayout()
-        self.menu_bar: QMenuBar = self.menuBar()
-        self.settings_dialog: SettingsInterface = SettingsInterface(self)
+        self.menu_bar: MenuBar = MenuBar(self)
+        self.setMenuBar(self.menu_bar)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
         self.check_update_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
         self.emitter: SignalEmitter = SignalEmitter()
@@ -46,6 +45,7 @@ class MainInterface(QMainWindow):
         self._check_update_futures: set[Future] = set()
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        self.list_widget.closeEvent(event)
         self.executor.shutdown(wait=False)
         self.check_update_executor.shutdown(wait=False)
         super().closeEvent(event)
@@ -53,8 +53,6 @@ class MainInterface(QMainWindow):
     def initialize(self) -> None:
         self._signal_binding()
         self._initialize_parsing_box()
-        self._initialize_menu_bar()
-        self._initialize_cookies_menu_bar()
         self._initialize_help_menu_bar()
         self._initialize_windows()
 
@@ -71,17 +69,6 @@ class MainInterface(QMainWindow):
         self.parse_button.clicked.connect(self.on_parse_button_clicked)
         self._setup_input_layout()
 
-    def _initialize_menu_bar(self) -> None:
-        setting_menu : QAction = self.menu_bar.addAction(self.tr("设置"))
-        setting_menu.triggered.connect(self.on_settings)
-
-    def _initialize_cookies_menu_bar(self) -> None:
-        cookies_menu : QMenu = self.menu_bar.addMenu(self.tr("cookies"))
-        w: QAction = cookies_menu.addAction(self.tr("导入cookies"))
-        d: QAction = cookies_menu.addAction(self.tr("清除cookies"))
-        w.triggered.connect(self.import_cookies)
-        d.triggered.connect(self.clear_cookies)
-
     def _initialize_help_menu_bar(self) -> None:
         help_menu: QMenu = self.menu_bar.addMenu(self.tr("帮助"))
         up_date: QAction = help_menu.addAction(self.tr("检查更新"))
@@ -97,39 +84,15 @@ class MainInterface(QMainWindow):
         self.main_widget.setLayout(self.main_layout)
         self.show()
 
-    @Slot(str, str)
-    def ui_tra(self, string: str, url: str) -> None:
-        if string == 'err':
-            MessageBox(self, title='检测更新', text='无法连接到更新服务器，请检查网络。').exec()
-        elif string:
-            reply : int = MessageBox(
-                self,
-                title='有新版本',
-                text='是否下载',
-                buttons=QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
-            ).exec()
-            if reply == QMessageBox.StandardButton.Ok:
-                QDesktopServices.openUrl(QUrl(url))
+    @Slot(str, str, bool, str)
+    def ui_tra(self, title: str, text: str, c: bool, html_url: str) -> None:
+        if c:
+            y = MessageBox(self, title, text,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No).exec()
+            if y == QMessageBox.StandardButton.Yes:
+                QDesktopServices.openUrl(QUrl(html_url))
         else:
-            MessageBox(self, title='检测更新', text='已是最新版本').exec()
-
-    @Slot()
-    def clear_cookies(self) -> None:
-        reply = MessageBox(
-            self,
-            title='确认',
-            text='是否删除',
-            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        if reply == QMessageBox.StandardButton.No:
-            return
-        settings_manager.clear_cookies()
-
-    @Slot()
-    def import_cookies(self) -> None:
-        file, _ = QFileDialog.getOpenFileName(self)
-        if file:
-            settings_manager.import_cookies(file)
+            MessageBox(self, title, text).exec()
 
     @Slot()
     def check_update(self) -> None:
@@ -146,10 +109,6 @@ class MainInterface(QMainWindow):
     def append_log_text(self, text : str) -> None:
         self.text_edit.append(text)
 
-    @Slot()
-    def on_settings(self) -> None:
-        self.settings_dialog.exec()
-        self.settings_dialog.synchronous()
 
     @Slot()
     def on_parse_button_clicked(self) -> None:

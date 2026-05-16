@@ -8,7 +8,7 @@ from src.signal import SignalEmitter
 
 
 class DownloadTaskWidget(QWidget):
-    def __init__(self, signal : SignalEmitter, title : str) -> None:
+    def __init__(self, signal: SignalEmitter, title: str) -> None:
         super().__init__()
         self.list_item = None
         self.is_cancelled : threading.Event = threading.Event()
@@ -17,12 +17,12 @@ class DownloadTaskWidget(QWidget):
         self.emitter : SignalEmitter = SignalEmitter()
         self.hbox : QHBoxLayout = QHBoxLayout()
         self.label : QLabel = QLabel(title)
-        self.hbox.addWidget(self.label)
+        self.hbox.addWidget(self.label, stretch=3)
         self.progress_bar : QProgressBar = QProgressBar()
         self.progress_bar.setValue(0)
-        self.hbox.addWidget(self.progress_bar)
+        self.hbox.addWidget(self.progress_bar, stretch=6)
         self.button : QPushButton = QPushButton(self.tr("取消"))
-        self.hbox.addWidget(self.button)
+        self.hbox.addWidget(self.button, stretch=1)
         self.setLayout(self.hbox)
         self.button.clicked.connect(self.on_cancel_clicked)
         self.emitter.progress_update.connect(self.update_progress)

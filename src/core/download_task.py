@@ -6,7 +6,7 @@ from typing import Callable, Optional
 from src.core.downloader import download
 from src.core.exceptions import DownloadCancelled
 from src.information import SettingsManager
-from src.signal import MyLogger
+from src.signal import Logger
 
 
 class DownloadTask:
@@ -19,7 +19,7 @@ class DownloadTask:
         url: str,
         index: int | str,
         settings: SettingsManager,
-        logger: MyLogger,
+        logger: Logger,
         resolution: str,
         progress_callback: Optional[Callable[[dict], None]] = None,
         finished_callback: Optional[Callable[[], None]] = None,

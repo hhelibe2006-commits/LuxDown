@@ -1,20 +1,25 @@
 from concurrent.futures import ThreadPoolExecutor
 
 from PySide6.QtCore import Slot
+from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QWidget, QListWidget, QListWidgetItem
 
-from src.signal import MyLogger
-from src.ui.download_task_widget import DownloadTaskWidget
-from src.information.settings_information import settings_manager
 from src.core.download_task import DownloadTask
+from src.information.settings_information import settings_manager
+from src.signal import Logger
+from src.ui.download_task_widget import DownloadTaskWidget
+
 
 class ListWidget(QListWidget):
-    def __init__(self, emitter, logger: MyLogger):
+    def __init__(self, emitter, logger: Logger):
         super().__init__()
         self.emitter = emitter
-        self.logger : MyLogger = logger
+        self.logger : Logger = logger
         self.download_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=3)
 
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.download_executor.shutdown(wait=False)
+        super().closeEvent(event)
     @Slot()
     def start_download(self, titles: dict, urls: dict, resolution: dict):
         for index in urls.keys():

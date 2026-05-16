@@ -9,14 +9,14 @@ import yt_dlp
 from src.core.exceptions import DownloadCancelled
 from src.core.ydl_options import build_ydl_opts
 from src.information import SettingsManager
-from src.signal import MyLogger
+from src.signal import Logger
 
 
 def download(url: str,
              progress_hook: Callable[[dict], None],
              index: int | str,
              settings: SettingsManager,
-             logger: MyLogger,
+             logger: Logger,
              resolution: str) -> bool:
     """
     下载函数，供给DownloadTask使用，

@@ -3,11 +3,11 @@ import platform
 from typing import Callable
 
 from src.information import SettingsManager
-from src.signal import MyLogger
+from src.signal import Logger
 
 
 def build_ydl_opts(settings: SettingsManager,
-                   logger: MyLogger,
+                   logger: Logger,
                    index: int | str,
                    resolution: str,
                    progress_hook: Callable[[dict], None]) -> dict:
