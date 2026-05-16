@@ -7,15 +7,14 @@ from typing import Any
 
 from yt_dlp import YoutubeDL
 
-from signal import MyLogger
+from src.signal import MyLogger
 
 
-def extract_info(url : str, logger : MyLogger, cookies : str)\
-        -> tuple[Any] | tuple[list[Any], str | None, str | None, str | None]:
+def extract_info(url : str, logger : MyLogger, cookies_file : str)-> tuple:
     ydl_opts : dict = {
         'logger': logger,
         'max_sleep_interval': 30,
-        'cookiefile': cookies,
+        'cookiefile': cookies_file,
                 }
     if platform.system() == 'Windows':
         ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')

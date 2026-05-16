@@ -6,7 +6,7 @@ from http import cookiejar
 from pathlib import Path
 from typing import Any, cast
 
-from utils import get_config_dir
+from src.utils import get_config_dir
 
 
 class SettingsManager:
