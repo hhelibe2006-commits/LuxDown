@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from yt_dlp import YoutubeDL
 
-from src.signal import MyLogger
+from src.signal import Logger
 
 
-def extract_info(url: str, logger: MyLogger, cookies_file: str)\
+def extract_info(url: str, logger: Logger, cookies_file: str)\
         -> Tuple[List[Dict[str, Any]], Optional[str], Optional[str], Optional[str]]:
     """
     解析函数，将链接解析并返回元组

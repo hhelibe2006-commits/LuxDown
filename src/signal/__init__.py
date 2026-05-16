@@ -1,4 +1,4 @@
-__all__ = ["MyLogger", "SignalEmitter"]
+__all__ = ["Logger", "SignalEmitter"]
 
-from src.signal.my_logger import MyLogger
+from src.signal.my_logger import Logger
 from src.signal.signal_emitter import SignalEmitter

@@ -7,4 +7,4 @@ class SignalEmitter(QObject):
     download_start : Signal = Signal(object, object, object)
     progress_update : Signal = Signal(int)
     download_finished : Signal = Signal(QListWidgetItem)
-    check_update : Signal = Signal(str, str)
+    check_update : Signal = Signal(str, str, bool, str)
