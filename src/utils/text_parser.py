@@ -9,8 +9,8 @@ from PySide6.QtWidgets import QPlainTextEdit
 
 def text_to_list(editor_or_text: Union[QPlainTextEdit, str]) -> list[str]:
     if isinstance(editor_or_text, QPlainTextEdit):
-        text = editor_or_text.toPlainText()
+        text: str = editor_or_text.toPlainText()
     else:
-        text = editor_or_text or ""
+        text: str = editor_or_text or ""
 
     return [line.strip() for line in text.splitlines() if line.strip()]
