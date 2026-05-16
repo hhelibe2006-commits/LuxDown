@@ -3,7 +3,7 @@ import threading
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QProgressBar, QPushButton
 
-from signal import SignalEmitter
+from src.signal import SignalEmitter
 
 
 class DownloadTaskWidget(QWidget):

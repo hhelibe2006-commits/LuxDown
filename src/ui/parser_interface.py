@@ -3,8 +3,8 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
     QHeaderView, QPushButton, QComboBox
 
-from utils import set_window_size, center_ui
-from .download_task_widget import SignalEmitter
+from src.utils import set_window_size, center_ui
+from src.ui.download_task_widget import SignalEmitter
 
 
 class DownloadDialog(QDialog):

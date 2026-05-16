@@ -7,8 +7,8 @@ from typing import Callable
 
 import yt_dlp
 
-from information import SettingsManager
-from signal import MyLogger
+from src.information import SettingsManager
+from src.signal import MyLogger
 
 
 def download(url : str,

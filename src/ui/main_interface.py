@@ -11,15 +11,15 @@ from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
     QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QListWidget, \
     QListWidgetItem, QTextEdit, QMessageBox, QFileDialog, QMenuBar, QMenu
 
-from information.settings_information import settings_manager
-from signal import MyLogger
+from src.information import settings_manager
+from src.signal import MyLogger
 from src.core import extract_info, download
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
-from ui.download_task_widget import DownloadTaskWidget, SignalEmitter
-from ui.parser_interface import DownloadDialog
-from ui.settings_interface import SettingsInterface
-from widegs import MessageBox
+from src.ui.download_task_widget import DownloadTaskWidget, SignalEmitter
+from src.ui.parser_interface import DownloadDialog
+from src.ui.settings_interface import SettingsInterface
+from src.widgets import MessageBox
 
 
 class MainInterface(QMainWindow):
