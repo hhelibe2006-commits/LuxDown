@@ -30,7 +30,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .
-          pip install nuitka
+          pip install imageio
 
       - name: Nuitka 编译
         run: |
