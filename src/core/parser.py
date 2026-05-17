@@ -23,6 +23,9 @@ def extract_info(url: str, logger: Logger, cookies_file: str)\
     if platform.system() == 'Windows':
         ydl_opts['deno_path'] = os.path.join('deno', 'deno.exe')
 
+    elif platform.system() == 'Darwin':
+        ydl_opts['deno_path'] = os.path.join('deno', 'deno.app')
+
     with YoutubeDL(ydl_opts) as ydl:  # type: ignore
         info = ydl.extract_info(url, download=False)
         if not info:

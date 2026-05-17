@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 from typing import Callable
 
 from src.information import SettingsManager
@@ -39,9 +40,15 @@ def build_ydl_opts(settings: SettingsManager,
     else:
         pass
 
+    base_dir = os.path.dirname(sys.executable)
+
     if platform.system() == 'Windows':
         opts['ffmpeg_location'] = os.path.join('ffmpeg', 'bin', 'ffmpeg.exe')
         opts['deno_path'] = os.path.join('deno', 'deno.exe')
+
+    elif platform.system() == 'Darwin':
+        opts['ffmpeg_location'] = os.path.join(base_dir, 'ffmpeg')
+        opts['deno_path'] = os.path.join(base_dir, 'deno')
 
     return opts
 
