@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g., v1.0.1)'
+        description: 'Release tag (e.g., v1.0.0)'
         required: true
-        default: 'v1.0.1'
+        default: 'v1.0.0'
 
 jobs:
   build:
@@ -44,7 +44,9 @@ jobs:
           --windows-file-version=1.0.0.0 `
           --windows-product-version=1.0.0.0 `
           --windows-file-description=" 这是一款用于下载视频的软件" `
-          --output-filename=LuxDown --output-dir=build --assume-yes-for-downloads
+          --output-filename=LuxDown --output-dir=build --assume-yes-for-downloads `
+          --c-args=/d2FH4 `
+          --jobs=1
 
       - name: 安装 WiX Toolset
         run: dotnet tool install --global wix
