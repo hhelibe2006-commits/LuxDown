@@ -17,6 +17,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: 安装 Clang 和 LLVM
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "15"
 
       - name: 切换版本
         run: git checkout ${{ github.event.inputs.tag }}
@@ -31,14 +35,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
-      - name: 设置 MSVC 编译器参数（缓解内存溢出）
-        run: echo "CL=/d2FH4" >> $env:GITHUB_ENV
-
       - name: Nuitka编译
         run: |
           python -m nuitka --standalone --show-progress --plugin-enable=pyside6 `
           src\main.py `
-          --msvc=latest `
+          --clang `
           --windows-console-mode=disable `
           --low-memory `
           --windows-icon-from-ico=.\src\LuxDown.ico `
