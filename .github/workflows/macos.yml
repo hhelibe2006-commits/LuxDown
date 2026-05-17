@@ -18,9 +18,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 切换到指定版本
-        run: git checkout ${{ github.event.inputs.tag }}
-
       - name: 设置 Python
         uses: actions/setup-python@v5
         with:
@@ -43,10 +40,7 @@ jobs:
             --macos-app-icon=src/LuxDown.icns \
             --output-filename=LuxDown \
             src/main.py
-        # Nuitka 的 --macos-create-app-bundle 会自动生成 .app 结构
-        # 产物在 build/LuxDown.app
 
-      # 下载 macOS 版 ffmpeg 和 deno，放入 .app 的 MacOS 目录
       - name: 下载 ffmpeg（macOS 静态构建）
         run: |
           wget -q https://evermeet.cx/ffmpeg/get/ffmpeg/zip -O ffmpeg.zip
@@ -60,16 +54,12 @@ jobs:
           unzip -q deno-aarch64-apple-darwin.zip -d deno_tmp
           cp deno_tmp/deno build/LuxDown.app/Contents/MacOS/deno
           chmod +x build/LuxDown.app/Contents/MacOS/deno
-        # 注意：macos-latest 是 Apple Silicon (arm64)，所以用 aarch64 版本
-        # 如需 Intel 兼容，可下载 x86_64 版本或利用 Rosetta 2
 
-      # 确保 Info.plist 信息正确（Nuitka 通常会自动生成，可补上自定义字段）
       - name: 更新 Info.plist
         run: |
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.hhelibe.luxdown" build/LuxDown.app/Contents/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ github.event.inputs.tag }}" build/LuxDown.app/Contents/Info.plist
 
-      # 创建 .dmg 安装镜像
       - name: 打包为 DMG
         run: |
           # 创建临时目录，放入 .app
@@ -88,8 +78,6 @@ jobs:
             --app-drop-link 450 200 \
             "LuxDown-${{ github.event.inputs.tag }}-arm64.dmg" \
             dmg/
-        # 注意：若没有背景图片，可删除 --background 参数
-        # 若没有 .icns 文件，可用 --volicon 指向 PNG
 
       - name: 上传 DMG 制品
         uses: actions/upload-artifact@v4
