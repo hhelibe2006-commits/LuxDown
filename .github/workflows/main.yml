@@ -31,6 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
+      - name: 设置 MSVC 编译器参数（缓解内存溢出）
+        run: echo "CL=/d2FH4" >> $env:GITHUB_ENV
+
       - name: Nuitka编译
         run: |
           python -m nuitka --standalone --show-progress --plugin-enable=pyside6 `
@@ -45,7 +48,6 @@ jobs:
           --windows-product-version=1.0.0.0 `
           --windows-file-description=" 这是一款用于下载视频的软件" `
           --output-filename=LuxDown --output-dir=build --assume-yes-for-downloads `
-          --c-args=/d2FH4 `
           --jobs=1
 
       - name: 安装 WiX Toolset
