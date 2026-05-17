@@ -2,88 +2,74 @@ name: Build Standalone Binaries
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: 检出仓库
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Python
+      - name: 切换版本
+        run: git checkout ${{ github.event.inputs.tag }}
+
+      - name: python环境设置
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'   # 3.12 完全可用，保持即可
+          python-version: '3.12'
 
-      - name: Install Python dependencies
+      - name: 安装依赖
         run: |
           python -m pip install --upgrade pip
-          pip install . ordered-set zstandard
+          pip install .
 
-      # ------ 清理 macOS 环境（释放空间/缓存）------
-      - name: Cleanup before build (macOS)
-        if: runner.os == 'macOS'
+      - name: Nuitka编译
         run: |
-          sudo rm -rf /Library/Developer/CoreSimulator
-          df -h
+          python -m `
+          nuitka --standalone `
+          --show-progress --plugin-enable=pyside6 `
+          src\main.py --msvc`
+          --windows-console-mode=disable`
+          --low-memory --windows-icon-from-ico=.\src\LuxDown.ico 
+          --windows-company-name="hhelibe" `
+          --windows-product-name="LuxDown" `
+          --windows-file-version=1.0.0.0 `
+          --windows-product-version=1.0.0.0`
+          --windows-file-description=" 这是一款用于下载视频的软件"`
+          --output-filename=LuxDown --output-dir=build
 
-      # ------ 安装 Clang（Windows / Linux）------
-      - name: Install Clang (Windows)
-        if: runner.os == 'Windows'
+      - name: 安装 WiX Toolset
+        run: dotnet tool install --global wix
+
+      - name: 下载ffmpeg
         run: |
-          choco install llvm -y --no-progress
-          echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z" -OutFile "ffmpeg.7z"`
+          7z x ffmpeg.7z -offmpeg_extracted -y
+          $sourceFolder = Get-ChildItem -Directory ffmpeg_extracted | Select-Object -First 1
+          Copy-Item "$($sourceFolder.FullName)\*" "build\main.dist\ffmpeg\" -Recurse -Force
 
-      - name: Install Clang (Linux)
-        if: runner.os == 'Linux'
+      - name: 下载deno
         run: |
-          sudo apt-get update
-          sudo apt-get install -y clang
+          Invoke-WebRequest -Uri "https://github.com/denoland/deno/releases/download/v2.7.14/deno-x86_64-pc-windows-msvc.zip" -OutFile "deno.zip"
+          Expand-Archive -Path deno.zip -DestinationPath deno_extracted
+          New-Item -ItemType Directory -Path "build\main.dist\deno" -Force
+          Copy-Item deno_extracted\* "build\main.dist\deno\" -Recurse -Force
 
-      # macOS 自带 clang，无需额外安装
-
-      # ------ Nuitka 编译 (每个平台使用各自的续行语法) ------
-      - name: Build with Nuitka (Windows)
-        if: runner.os == 'Windows'
+      - name: 构建msi安装包
         run: |
-          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py `
-            --clang --jobs=1 --low-memory `
-            --windows-console-mode=disable `
-            --windows-icon-from-ico=src/LuxDown.ico `
-            --windows-company-name="hhelibe2006" `
-            --windows-product-name="LuxDown" `
-            --windows-file-version=1.0.0.0 `
-            --windows-product-version=1.0.0.0 `
-            --windows-file-description=" 这是一款用于下载视频的软件" `
-            --output-dir=build `
-            --output-filename=LuxDown
+          wix extension add WixToolset.Util.wixext
+          wix build installer.wxs -o LuxDown-x64-${{ github.event.inputs.tag }}.msi -arch x64
 
-      - name: Build with Nuitka (macOS) as .app bundle
-        if: runner.os == 'macOS'
-        run: |
-          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py \
-            --clang --jobs=1 --low-memory \
-            --output-dir=build \
-            --output-filename=LuxDown \
-            --macos-create-app-bundle \
-            --macos-app-icon=./LuxDown.icns
-
-      - name: Build with Nuitka (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          nuitka --standalone --show-progress --plugin-enable=pyside6 src/main.py \
-            --clang --jobs=1 --low-memory \
-            --output-dir=build \
-            --output-filename=LuxDown
-
-      # ------ 上传构件 ------
-      - name: Upload artifact
+      - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: LuxDown-${{ runner.os }}
-          path: |
-            build/**
+          name: LuxDown-x64-${{ github.event.inputs.tag }}.msi
+          path: 'LuxDown-x64-${{ github.event.inputs.tag }}.msi'
