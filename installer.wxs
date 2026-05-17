@@ -1,0 +1,43 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="LuxDown"
+           Manufacturer="hhelibe"
+           Version="1.0.0"
+           UpgradeCode="PUT-YOUR-OWN-STABLE-GUID-HERE"
+           Scope="perMachine"
+           Id="*">
+
+    <MajorUpgrade DowngradeErrorMessage="已安装更高版本，无法覆盖。" />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="LuxDown" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Feature Id="Main" Title="主程序" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="DesktopShortcut" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="build\main.dist\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="DesktopShortcut" Directory="INSTALLFOLDER">
+      <Component Id="MainExeAndShortcut" Guid="PUT-ANOTHER-GUID-HERE">
+        <File Id="MainExe" Source="build\main.dist\LuxDown.exe" />
+        <Shortcut Id="DesktopShortcut"
+                  Directory="DesktopFolder"
+                  Name="LuxDown"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Advertise="no"
+                  Icon="MainExe" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
