@@ -38,7 +38,7 @@ jobs:
           --show-progress --plugin-enable=pyside6 `
           src\main.py --msvc`
           --windows-console-mode=disable`
-          --low-memory --windows-icon-from-ico=.\src\LuxDown.ico 
+          --low-memory --windows-icon-from-ico=.\src\LuxDown.ico`
           --windows-company-name="hhelibe" `
           --windows-product-name="LuxDown" `
           --windows-file-version=1.0.0.0 `
