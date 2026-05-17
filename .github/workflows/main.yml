@@ -68,6 +68,14 @@ jobs:
           New-Item -ItemType Directory -Path "build\main.dist\deno" -Force
           Copy-Item deno_extracted\* "build\main.dist\deno\" -Recurse -Force
 
+      #- name: 翻译
+      #  run: |
+      #    Get-ChildItem -Path src -Filter *.ts | ForEach-Object { pyside6-lrelease $_.FullName }
+
+      #- name: 复制翻译文件到打包目录
+      #  run: |
+      #    Copy-Item src/*.qm "build\main.dist" -Force
+
       - name: 构建msi安装包
         run: |
           wix extension add WixToolset.Util.wixext

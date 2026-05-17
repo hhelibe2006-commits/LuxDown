@@ -58,6 +58,11 @@ jobs:
           cp deno_tmp/deno build/LuxDown.app/Contents/MacOS/deno
           chmod +x build/LuxDown.app/Contents/MacOS/deno
 
+      - name: 翻译
+        run: |
+          pyside6-lrelease src/*.ts
+          cp src/*.qm build/LuxDown.app/Contents/MacOS/
+
       - name: 更新 Info.plist
         run: |
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.hhelibe.luxdown" build/LuxDown.app/Contents/Info.plist

@@ -43,6 +43,11 @@ jobs:
             --output-filename=LuxDown \
             src/main.py
 
+      - name: 翻译
+        run: |
+          pyside6-lrelease src/*.ts
+          cp src/*.qm build/main.dist/
+
       # 准备 .deb 包的目录结构
       - name: 准备 DEB 打包目录
         run: |
