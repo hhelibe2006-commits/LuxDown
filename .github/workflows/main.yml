@@ -56,7 +56,7 @@ jobs:
 
       - name: 下载ffmpeg
         run: |
-          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z" -OutFile "ffmpeg.7z"`
+          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z" -OutFile "ffmpeg.7z"
           7z x ffmpeg.7z -offmpeg_extracted -y
           $sourceFolder = Get-ChildItem -Directory ffmpeg_extracted | Select-Object -First 1
           Copy-Item "$($sourceFolder.FullName)\*" "build\main.dist\ffmpeg\" -Recurse -Force
