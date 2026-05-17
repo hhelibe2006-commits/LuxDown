@@ -40,7 +40,7 @@ jobs:
             --enable-plugin=pyside6 \
             --assume-yes-for-downloads \
             --macos-create-app-bundle \
-            --macos-app-icon=src/LuxDown.icns \
+            --macos-app-icon=src/LuxDown.png \
             --output-filename=LuxDown \
             src/main.py
 
