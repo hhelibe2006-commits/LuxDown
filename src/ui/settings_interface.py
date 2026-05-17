@@ -19,16 +19,16 @@ class SettingsInterface(QDialog):
     """
     def __init__(self, parent : QMainWindow) -> None:
         super().__init__(parent)
-        self.vbox : QVBoxLayout = QVBoxLayout(self)
-        self.path_input : QLineEdit = QLineEdit()
-        self.audio_box : QCheckBox = QCheckBox(self.tr("音频"))
-        self.video_box : QCheckBox = QCheckBox(self.tr("视频"))
-        self.audio_combobox : QComboBox = QComboBox()
-        self.video_combobox : QComboBox = QComboBox()
-        self.language_combobox : QComboBox = QComboBox()
-        self.path_button : QPushButton = QPushButton(self.tr("选择路径"))
-        self.apply_button : QPushButton = QPushButton(self.tr("保存"))
-        self.cancel_button : QPushButton = QPushButton(self.tr("取消"))
+        self.vbox: QVBoxLayout = QVBoxLayout(self)
+        self.path_input: QLineEdit = QLineEdit()
+        self.audio_box: QCheckBox = QCheckBox(self.tr("音频"))
+        self.video_box: QCheckBox = QCheckBox(self.tr("视频"))
+        self.audio_combobox: QComboBox = QComboBox()
+        self.video_combobox: QComboBox = QComboBox()
+        self.language_combobox: QComboBox = QComboBox()
+        self.path_button: QPushButton = QPushButton(self.tr("选择路径"))
+        self.apply_button: QPushButton = QPushButton(self.tr("保存"))
+        self.cancel_button: QPushButton = QPushButton(self.tr("取消"))
         self.initialize()
 
     def initialize(self) -> None:
@@ -50,7 +50,7 @@ class SettingsInterface(QDialog):
     def _initialize_buttons(self) -> None:
         self.apply_button.clicked.connect(self._on_apply_button)
         self.cancel_button.clicked.connect(self.close)
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         hbox.addStretch()
         hbox.addWidget(self.apply_button)
         hbox.addWidget(self.cancel_button)
@@ -66,7 +66,7 @@ class SettingsInterface(QDialog):
         self.path_input.setPlaceholderText(self.tr("下载路径"))
         self.path_button.clicked.connect(self._choose_dir)
         self.path_input.setText(settings_manager.default_download_dir)
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         hbox.addWidget(self.path_input)
         hbox.addWidget(self.path_button)
         self.vbox.addWidget(QLabel(self.tr("下载路径:")))
@@ -77,7 +77,7 @@ class SettingsInterface(QDialog):
         self.video_box.setCheckable(True)
         self.audio_box.setChecked(settings_manager.download_audio)
         self.video_box.setChecked(settings_manager.download_video)
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         hbox.addWidget(self.audio_box)
         hbox.addWidget(self.video_box)
         self.vbox.addWidget(QLabel(self.tr("下载内容:")))
@@ -91,7 +91,7 @@ class SettingsInterface(QDialog):
         self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.video_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.vbox.addWidget(QLabel(self.tr("格式选择")))
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         hbox.addWidget(QLabel(self.tr("音频:")))
         hbox.addWidget(self.audio_combobox)
         hbox.addWidget(QLabel(self.tr("视频:")))
@@ -100,20 +100,20 @@ class SettingsInterface(QDialog):
 
     @Slot()
     def _choose_dir(self) -> None:
-        dir_path : str = QFileDialog.getExistingDirectory(self, self.tr("选择文件夹"), self.path_input.text())
+        dir_path: str = QFileDialog.getExistingDirectory(self, self.tr("选择文件夹"), self.path_input.text())
         if dir_path:
             self.path_input.setText(dir_path)
 
     @Slot()
     def _on_apply_button(self) -> None:
-        dict_settings : dict = {
+        dict_settings: dict = {
             "path_input": self.path_input.text(),
             "audio": self.audio_combobox.currentText(),
             "video": self.video_combobox.currentText(),
             "on_audio": self.audio_box.isChecked(),
             "on_video": self.video_box.isChecked(),
         }
-        revise : SettingsInterface.ReviseSettings = self.ReviseSettings(settings_manager.apply_settings, dict_settings)
+        revise: SettingsInterface.ReviseSettings = self.ReviseSettings(settings_manager.apply_settings, dict_settings)
         QThreadPool.globalInstance().start(revise)
         self.close()
 
@@ -121,7 +121,7 @@ class SettingsInterface(QDialog):
         def __init__(self, settings_info : Callable[[dict], None], data : dict) -> None:
             super().__init__()
             self.settings_info : Callable[[dict], None] = settings_info
-            self.data : dict = data
+            self.data: dict = data
 
         def run(self) -> None:
             self.settings_info(self.data)
