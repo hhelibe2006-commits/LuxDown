@@ -48,6 +48,7 @@ jobs:
         run: |
           wget -q "https://evermeet.cx/ffmpeg/ffmpeg-8.1.1.zip" -O ffmpeg.zip
           unzip -q ffmpeg.zip -d ffmpeg_tmp
+          mkdir -p build/LuxDown.app/Contents/MacOS
           cp ffmpeg_tmp/ffmpeg build/LuxDown.app/Contents/MacOS/ffmpeg
           chmod +x build/LuxDown.app/Contents/MacOS/ffmpeg
 
@@ -55,12 +56,14 @@ jobs:
         run: |
           wget -q "https://github.com/denoland/deno/releases/download/v2.7.14/deno-x86_64-apple-darwin.zip" -O deno.zip
           unzip -q deno.zip -d deno_tmp
+          mkdir -p build/LuxDown.app/Contents/MacOS
           cp deno_tmp/deno build/LuxDown.app/Contents/MacOS/deno
           chmod +x build/LuxDown.app/Contents/MacOS/deno
 
       - name: 翻译
         run: |
           pyside6-lrelease src/*.ts
+          mkdir -p build/LuxDown.app/Contents/MacOS
           cp src/*.qm build/LuxDown.app/Contents/MacOS/
 
       - name: 更新 Info.plist
@@ -70,10 +73,8 @@ jobs:
 
       - name: 打包为 DMG
         run: |
-          # 创建临时目录，放入 .app
           mkdir -p dmg
           cp -R build/LuxDown.app dmg/
-          # 用 create-dmg 生成漂亮的 DMG
           brew install create-dmg
           create-dmg \
             --volname "LuxDown" \
