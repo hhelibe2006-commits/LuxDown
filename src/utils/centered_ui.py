@@ -1,7 +1,6 @@
 """
 该文件存放界面位置设置的函数
 """
-# pylint: disable=no-name-in-module
 from PySide6 import QtGui
 from PySide6.QtCore import QRect
 from PySide6.QtWidgets import QMainWindow, QDialog

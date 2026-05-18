@@ -3,9 +3,7 @@
 """
 from typing import Callable
 
-# pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
-# pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QPushButton, QFileDialog, QComboBox, QSizePolicy, QCheckBox, QMainWindow
 

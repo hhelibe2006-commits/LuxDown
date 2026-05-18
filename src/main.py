@@ -3,9 +3,7 @@
 """
 import sys
 
-# pylint: disable=no-name-in-module
 from PySide6.QtGui import QIcon
-# pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 

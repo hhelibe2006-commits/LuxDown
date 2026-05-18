@@ -2,9 +2,9 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenuBar, QMainWindow, QMenu, QFileDialog, QMessageBox
 
-from information import settings_manager
+from src.information import settings_manager
 from src.widgets.message_box import MessageBox
-from .settings_interface import SettingsInterface
+from src.ui.settings_interface import SettingsInterface
 
 
 class MenuBar(QMenuBar):

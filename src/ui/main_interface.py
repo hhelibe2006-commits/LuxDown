@@ -4,24 +4,22 @@
 from concurrent.futures import ThreadPoolExecutor, Future
 
 from PySide6.QtCore import QUrl
-# pylint: disable=no-name-in-module
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtGui import QDesktopServices
-# pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTextEdit, QMessageBox, QFileDialog, QMenu
+    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTextEdit, QMessageBox, QMenu
 
 from src.core import extract_info
 from src.information import settings_manager
 from src.signal import Logger
 from src.ui.download_task_widget import SignalEmitter
 from src.ui.list_widget import ListWidget
+from src.ui.menu_bar import MenuBar
 from src.ui.parser_interface import DownloadDialog
 from src.utils import centered_ui, set_window_size, text_to_list, \
     is_url, check_update
 from src.widgets import MessageBox
-from src.ui.menu_bar import MenuBar
 
 
 class MainInterface(QMainWindow):

@@ -2,7 +2,6 @@
 该文件存放界面大小设置的函数
 """
 from PySide6.QtCore import QRect
-# pylint: disable=no-name-in-module
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QMainWindow, QDialog
 
