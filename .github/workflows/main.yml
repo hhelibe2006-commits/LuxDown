@@ -57,25 +57,14 @@ jobs:
       - name: 下载ffmpeg
         run: |
           Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z" -OutFile "ffmpeg.7z"
-          7z x ffmpeg.7z -offmpeg_extracted -y
-          $sourceFolder = Get-ChildItem -Directory ffmpeg_extracted | Select-Object -First 1
-          # 确保目标是一个干净的目录
-          if (Test-Path "build\main.dist\ffmpeg") {
-              Remove-Item "build\main.dist\ffmpeg" -Recurse -Force
-          }
-          New-Item -ItemType Directory -Path "build\main.dist\ffmpeg" -Force | Out-Null
-          Copy-Item "$($sourceFolder.FullName)\*" "build\main.dist\ffmpeg\" -Recurse -Force
+          7z x ffmpeg.7z -y
+          Move-Item "ffmpeg-*" -Destination "build\main.dist\ffmpeg"
 
       - name: 下载deno
         run: |
           Invoke-WebRequest -Uri "https://github.com/denoland/deno/releases/download/v2.7.14/deno-x86_64-pc-windows-msvc.zip" -OutFile "deno.zip"
-          Expand-Archive -Path deno.zip -DestinationPath deno_extracted
-          
-          if (Test-Path "build\main.dist\deno") {
-              Remove-Item "build\main.dist\deno" -Recurse -Force
-          }
-          New-Item -ItemType Directory -Path "build\main.dist\deno" -Force | Out-Null
-          Copy-Item deno_extracted\* "build\main.dist\deno\" -Recurse -Force
+          Expand-Archive -Path deno.zip -DestinationPath deno
+          Move-Item "deno" -Destination "build\main.dist"
       #- name: 翻译
       #  run: |
       #    Get-ChildItem -Path src -Filter *.ts | ForEach-Object { pyside6-lrelease $_.FullName }
