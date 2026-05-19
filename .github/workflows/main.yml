@@ -75,8 +75,9 @@ jobs:
 
       - name: 构建msi安装包
         run: |
-          wix extension add WixToolset.Util.wixext
-          wix build installer.wxs -o LuxDown-x64-${{ github.event.inputs.tag }}.msi -arch x64
+          $env:WIX_ACCEPT_OSMF_EULA = "true"
+          wix extension add "${{ github.workspace }}/installer.wxs" WixToolset.Util.wixext
+          wix build installer.wxs -o LuxDown-x64-${{ github.event.inputs.tag }}.msi -arch x64 -ext WixToolset.Util.wixext
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
