@@ -1,10 +1,10 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="LuxDown"
+           Codepage="65001"
            Manufacturer="hhelibe"
-           Version="1.0.0"
-           UpgradeCode="PUT-YOUR-OWN-STABLE-GUID-HERE"
+           Version="1.0.3"
            Scope="perMachine"
-           Id="*">
+           UpgradeCode="B9A3F1C4-7D6E-4A2B-8C9D-EAF012345678">
 
     <MajorUpgrade DowngradeErrorMessage="已安装更高版本，无法覆盖。" />
     <MediaTemplate EmbedCab="yes" />
@@ -29,14 +29,13 @@
 
   <Fragment>
     <ComponentGroup Id="DesktopShortcut" Directory="INSTALLFOLDER">
-      <Component Id="MainExeAndShortcut" Guid="PUT-ANOTHER-GUID-HERE">
+      <Component Id="MainExeAndShortcut" Guid="A1B2C3D4-E5F6-7A8B-9C0D-E1F2A3B4C5D6">
         <File Id="MainExe" Source="build\main.dist\LuxDown.exe" />
         <Shortcut Id="DesktopShortcut"
                   Directory="DesktopFolder"
                   Name="LuxDown"
                   WorkingDirectory="INSTALLFOLDER"
-                  Advertise="no"
-                  Icon="MainExe" />
+                  Advertise="no" />
       </Component>
     </ComponentGroup>
   </Fragment>
