@@ -22,4 +22,3 @@ def test_text_to_list_with_qplaintextedit_if_available():
     editor = QPlainTextEdit()
     editor.setPlainText("one\n\n two ")
     assert text_to_list(editor) == ["one", "two"]
-

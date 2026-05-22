@@ -1,6 +1,7 @@
 """
 该文件存放调用yt-dlp进行下载的函数与类
 """
+
 from pathlib import Path
 from typing import Callable
 
@@ -12,12 +13,14 @@ from src.information import SettingsManager
 from src.signal import Logger
 
 
-def download(url: str,
-             progress_hook: Callable[[dict], None],
-             index: int | str,
-             settings: SettingsManager,
-             logger: Logger,
-             resolution: str) -> bool:
+def download(
+    url: str,
+    progress_hook: Callable[[dict], None],
+    index: int | str,
+    settings: SettingsManager,
+    logger: Logger,
+    resolution: str,
+) -> bool:
     """
     下载函数，供给DownloadTask使用，
     负责下载和返回下载进度给DownloadTask，
@@ -30,9 +33,11 @@ def download(url: str,
     ydl_opts = build_ydl_opts(settings, logger, index, resolution, progress_hook)
 
     # 如果没有启用任何格式，直接返回 False
-    if 'format' not in ydl_opts and not (settings.download_audio or settings.download_video):
+    if "format" not in ydl_opts and not (
+        settings.download_audio or settings.download_video
+    ):
         try:
-            logger.error('no download format enabled in settings')
+            logger.error("no download format enabled in settings")
         except Exception:
             pass
         return False

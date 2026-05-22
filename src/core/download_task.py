@@ -14,6 +14,7 @@ class DownloadTask:
     下载任务类，将原来ui里的下载逻辑抽象了出来，
     同时还提供供给yt-dlp的回调函数以及对应的取消操作
     """
+
     def __init__(
         self,
         url: str,
@@ -69,4 +70,3 @@ class DownloadTask:
                 except Exception:
                     pass
         return success
-

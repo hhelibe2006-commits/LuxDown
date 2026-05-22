@@ -9,7 +9,7 @@ class Logger(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self._logger : Logger = logging.getLogger('LuxDown')
+        self._logger: Logger = logging.getLogger("LuxDown")
 
     def debug(self, msg) -> None:
         try:

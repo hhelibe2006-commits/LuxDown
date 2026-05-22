@@ -1,6 +1,7 @@
 """
 主函数入口模块
 """
+
 import sys
 
 from PySide6.QtGui import QIcon
@@ -18,13 +19,14 @@ def main() -> None:
     """
     app = QApplication(sys.argv)
     load_translations(app)
-    apply_stylesheet(app, theme="dark_cyan.xml", extra = {'density_scale' : '0'})
+    apply_stylesheet(app, theme="dark_cyan.xml", extra={"density_scale": "0"})
     window = MainInterface()
     window.setWindowIcon(QIcon("LuxDown.png"))
     window.initialize()
     sys.exit(app.exec())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     """
     当该文件被直接运行时运行main()
     """

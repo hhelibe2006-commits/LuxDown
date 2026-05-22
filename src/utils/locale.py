@@ -1,21 +1,26 @@
+"""
+多语言模块
+"""
+
 import locale
 
 from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
 
-def load_translations(app : QApplication) -> None:
+def load_translations(app: QApplication) -> None:
     translator = QTranslator(app)
     locale_map: dict = {
-        'zh_CN': 'zh_CN.qm',
-        'en_US': 'en.qm',
-        'en_GB': 'en.qm',
-        'de_DE': 'de.qm',
-        'fr_FR': 'fr.qm',
-        'es_ES': 'es.qm'
+        "zh_CN": "zh_CN.qm",
+        "en_US": "en.qm",
+        "en_GB": "en.qm",
+        "de_DE": "de.qm",
+        "fr_FR": "fr.qm",
+        "es_ES": "es.qm",
     }
 
-    default = locale.getdefaultlocale()
+    default: tuple = locale.getdefaultlocale()
+    # default可能为[None, None]，因此需要判断
     lang_code = default[0] if default and default[0] else None
 
     if lang_code and locale_map.get(lang_code):
@@ -23,6 +28,6 @@ def load_translations(app : QApplication) -> None:
             app.installTranslator(translator)
             return
 
-    #当找不到语言时用英语
-    if translator.load('en.qm'):
+    # 当找不到语言时用英语
+    if translator.load("en.qm"):
         app.installTranslator(translator)

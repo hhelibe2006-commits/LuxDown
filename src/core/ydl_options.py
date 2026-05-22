@@ -7,11 +7,13 @@ from src.information import SettingsManager
 from src.signal import Logger
 
 
-def build_ydl_opts(settings: SettingsManager,
-                   logger: Logger,
-                   index: int | str,
-                   resolution: str,
-                   progress_hook: Callable[[dict], None]) -> dict:
+def build_ydl_opts(
+    settings: SettingsManager,
+    logger: Logger,
+    index: int | str,
+    resolution: str,
+    progress_hook: Callable[[dict], None],
+) -> dict:
     """
     yt-dlp的下载配置管理函数
     """
@@ -19,36 +21,35 @@ def build_ydl_opts(settings: SettingsManager,
     opts = {
         "logger": logger,
         "outtmpl": outtmpl,
-        'progress_hooks': [progress_hook],
-        'max_sleep_interval': 5,
-        'socket_timeout': 30,
-        'retries': 10,
-        'fragment_retries': 3,
-        'cookiefile': settings.cookies_file,
-        'format_sort': [f"res:{resolution.split('x')[-1]}"]
+        "progress_hooks": [progress_hook],
+        "max_sleep_interval": 5,
+        "socket_timeout": 30,
+        "retries": 10,
+        "fragment_retries": 3,
+        "cookiefile": settings.cookies_file,
+        "format_sort": [f"res:{resolution.split('x')[-1]}"],
     }
 
     if settings.download_audio and settings.download_video:
-        opts['format'] = 'bestvideo+bestaudio/best'
-        opts['merge_output_format'] = settings.current_video_format
+        opts["format"] = "bestvideo+bestaudio/best"
+        opts["merge_output_format"] = settings.current_video_format
     elif settings.download_audio:
-        opts['format'] = 'bestaudio/best'
-        opts['merge_output_format'] = settings.current_audio_format
+        opts["format"] = "bestaudio/best"
+        opts["merge_output_format"] = settings.current_audio_format
     elif settings.download_video:
-        opts['format'] = 'bestvideo'
-        opts['merge_output_format'] = settings.current_video_format
+        opts["format"] = "bestvideo"
+        opts["merge_output_format"] = settings.current_video_format
     else:
         pass
 
     base_dir = os.path.dirname(sys.executable)
 
-    if platform.system() == 'Windows':
-        opts['ffmpeg_location'] = os.path.join('ffmpeg', 'bin', 'ffmpeg.exe')
-        opts['deno_path'] = os.path.join('deno', 'deno.exe')
+    if platform.system() == "Windows":
+        opts["ffmpeg_location"] = os.path.join("ffmpeg", "bin", "ffmpeg.exe")
+        opts["deno_path"] = os.path.join("deno", "deno.exe")
 
-    elif platform.system() == 'Darwin':
-        opts['ffmpeg_location'] = os.path.join(base_dir, 'ffmpeg')
-        opts['deno_path'] = os.path.join(base_dir, 'deno')
+    elif platform.system() == "Darwin":
+        opts["ffmpeg_location"] = os.path.join(base_dir, "ffmpeg")
+        opts["deno_path"] = os.path.join(base_dir, "deno")
 
     return opts
-

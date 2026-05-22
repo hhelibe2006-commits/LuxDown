@@ -1,11 +1,23 @@
 """
 该文件存储设置界面类
 """
+
 from typing import Callable
 
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
-from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
-    QPushButton, QFileDialog, QComboBox, QSizePolicy, QCheckBox, QMainWindow
+from PySide6.QtWidgets import (
+    QDialog,
+    QLabel,
+    QLineEdit,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QFileDialog,
+    QComboBox,
+    QSizePolicy,
+    QCheckBox,
+    QMainWindow,
+)
 
 from src.information import settings_manager
 from src.utils import set_window_size, center_ui
@@ -15,7 +27,8 @@ class SettingsInterface(QDialog):
     """
     该类为设置界面类
     """
-    def __init__(self, parent : QMainWindow) -> None:
+
+    def __init__(self, parent: QMainWindow) -> None:
         super().__init__(parent)
         self.vbox: QVBoxLayout = QVBoxLayout(self)
         self.path_input: QLineEdit = QLineEdit()
@@ -56,7 +69,7 @@ class SettingsInterface(QDialog):
 
     def _initialize_windows(self) -> None:
         self.setWindowTitle(self.tr("设置"))
-        set_window_size(self, ratio= 0.6)
+        set_window_size(self, ratio=0.6)
         center_ui(self)
         self.vbox.addStretch()
 
@@ -86,8 +99,12 @@ class SettingsInterface(QDialog):
         self.video_combobox.addItems(settings_manager.video_formats)
         self.audio_combobox.setCurrentText(settings_manager.current_audio_format)
         self.video_combobox.setCurrentText(settings_manager.current_video_format)
-        self.audio_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.video_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.audio_combobox.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        self.video_combobox.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.vbox.addWidget(QLabel(self.tr("格式选择")))
         hbox: QHBoxLayout = QHBoxLayout()
         hbox.addWidget(QLabel(self.tr("音频:")))
@@ -98,7 +115,9 @@ class SettingsInterface(QDialog):
 
     @Slot()
     def _choose_dir(self) -> None:
-        dir_path: str = QFileDialog.getExistingDirectory(self, self.tr("选择文件夹"), self.path_input.text())
+        dir_path: str = QFileDialog.getExistingDirectory(
+            self, self.tr("选择文件夹"), self.path_input.text()
+        )
         if dir_path:
             self.path_input.setText(dir_path)
 
@@ -111,14 +130,16 @@ class SettingsInterface(QDialog):
             "on_audio": self.audio_box.isChecked(),
             "on_video": self.video_box.isChecked(),
         }
-        revise: SettingsInterface.ReviseSettings = self.ReviseSettings(settings_manager.apply_settings, dict_settings)
+        revise: SettingsInterface.ReviseSettings = self.ReviseSettings(
+            settings_manager.apply_settings, dict_settings
+        )
         QThreadPool.globalInstance().start(revise)
         self.close()
 
     class ReviseSettings(QRunnable):
-        def __init__(self, settings_info : Callable[[dict], None], data : dict) -> None:
+        def __init__(self, settings_info: Callable[[dict], None], data: dict) -> None:
             super().__init__()
-            self.settings_info : Callable[[dict], None] = settings_info
+            self.settings_info: Callable[[dict], None] = settings_info
             self.data: dict = data
 
         def run(self) -> None:

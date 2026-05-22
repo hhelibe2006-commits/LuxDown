@@ -23,9 +23,9 @@ class MenuBar(QMenuBar):
     def clear_cookies(self) -> None:
         reply = MessageBox(
             self,
-            title='确认',
-            text='是否删除',
-            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            title="确认",
+            text="是否删除",
+            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.No:
             return

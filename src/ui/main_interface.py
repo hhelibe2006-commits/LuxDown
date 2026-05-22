@@ -1,14 +1,24 @@
 """
 该文件存放主界面的类
 """
+
 from concurrent.futures import ThreadPoolExecutor, Future
 
 from PySide6.QtCore import QUrl
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, \
-    QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTextEdit, QMessageBox, QMenu
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QPlainTextEdit,
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QHBoxLayout,
+    QTextEdit,
+    QMessageBox,
+    QMenu,
+)
 
 from src.core import extract_info
 from src.information import settings_manager
@@ -17,8 +27,7 @@ from src.ui.download_task_widget import SignalEmitter
 from src.ui.list_widget import ListWidget
 from src.ui.menu_bar import MenuBar
 from src.ui.parser_interface import DownloadDialog
-from src.utils import centered_ui, set_window_size, text_to_list, \
-    is_url, check_update
+from src.utils import centered_ui, set_window_size, text_to_list, is_url, check_update
 from src.widgets import MessageBox
 
 
@@ -26,6 +35,7 @@ class MainInterface(QMainWindow):
     """
     该类为主界面类
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.text_edit: QTextEdit = QTextEdit()
@@ -37,7 +47,9 @@ class MainInterface(QMainWindow):
         self.menu_bar: MenuBar = MenuBar(self)
         self.setMenuBar(self.menu_bar)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.check_update_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
+        self.check_update_executor: ThreadPoolExecutor = ThreadPoolExecutor(
+            max_workers=1
+        )
         self.emitter: SignalEmitter = SignalEmitter()
         self.list_widget: ListWidget = ListWidget(self.emitter, self.logger)
         self._check_update_futures: set[Future] = set()
@@ -77,7 +89,7 @@ class MainInterface(QMainWindow):
     def _initialize_windows(self) -> None:
         self.main_layout.addWidget(self.list_widget)
         self.setWindowTitle(self.tr("LuxDown"))
-        set_window_size(self, ratio= 0.8)
+        set_window_size(self, ratio=0.8)
         centered_ui.center_ui(self)
         self.main_widget.setLayout(self.main_layout)
         self.show()
@@ -85,8 +97,12 @@ class MainInterface(QMainWindow):
     @Slot(str, str, bool, str)
     def ui_tra(self, title: str, text: str, c: bool, html_url: str) -> None:
         if c:
-            y = MessageBox(self, title, text,
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No).exec()
+            y = MessageBox(
+                self,
+                title,
+                text,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            ).exec()
             if y == QMessageBox.StandardButton.Yes:
                 QDesktopServices.openUrl(QUrl(html_url))
         else:
@@ -104,36 +120,35 @@ class MainInterface(QMainWindow):
         fut.add_done_callback(lambda f: self._check_update_futures.discard(f))
 
     @Slot(str)
-    def append_log_text(self, text : str) -> None:
+    def append_log_text(self, text: str) -> None:
         self.text_edit.append(text)
-
 
     @Slot()
     def on_parse_button_clicked(self) -> None:
         self.text_edit.clear()
-        urls : list[str] = text_to_list(self.plain_text_edit)
+        urls: list[str] = text_to_list(self.plain_text_edit)
         for url in urls:
             if is_url(url):
                 self.executor.submit(self._parse_url_in_thread, url)
             else:
-                MessageBox(self, title=self.tr('该条目不是链接'), text=self.tr(f'{url}不是链接')).exec()
+                MessageBox(
+                    self,
+                    title=self.tr("该条目不是链接"),
+                    text=self.tr(f"{url}不是链接"),
+                ).exec()
 
-    def _parse_url_in_thread(self, url : str) -> None:
-        parsed : tuple = extract_info(
-            url,
-            self.logger,
-            settings_manager.cookies_file
-        )
+    def _parse_url_in_thread(self, url: str) -> None:
+        parsed: tuple = extract_info(url, self.logger, settings_manager.cookies_file)
         self.emitter.parse_finished.emit(parsed)
 
     @Slot(tuple)
-    def on_parse_finished(self, parsed : tuple) -> None:
-        download_dialog : DownloadDialog = DownloadDialog(parsed, self.emitter)
+    def on_parse_finished(self, parsed: tuple) -> None:
+        download_dialog: DownloadDialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 
     def _setup_input_layout(self) -> None:
         self.setCentralWidget(self.main_widget)
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         self.main_layout.addLayout(hbox)
         hbox.addWidget(self.plain_text_edit)
         hbox.addWidget(self.text_edit)

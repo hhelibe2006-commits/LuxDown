@@ -2,36 +2,46 @@ from typing import cast
 
 from PySide6.QtCore import QUrl, Slot
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser, QTableWidget, QCheckBox, \
-    QHeaderView, QPushButton, QComboBox
+from PySide6.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTextBrowser,
+    QTableWidget,
+    QCheckBox,
+    QHeaderView,
+    QPushButton,
+    QComboBox,
+)
 
 from src.ui.download_task_widget import SignalEmitter
 from src.utils import set_window_size, center_ui
 
 
 class DownloadDialog(QDialog):
-    def __init__(self, parse_result : tuple, notifier : SignalEmitter) -> None:
+    def __init__(self, parse_result: tuple, notifier: SignalEmitter) -> None:
         super().__init__()
-        self.video_title : str = parse_result[-2]
-        self.notifier : SignalEmitter = notifier
-        self.main_layout : QVBoxLayout = QVBoxLayout(self)
-        self.top_area_layout : QHBoxLayout = QHBoxLayout()
-        self.webEngineView : QWebEngineView = QWebEngineView()
-        self.right_panel_layout : QVBoxLayout = QVBoxLayout()
-        self.description_browser : QTextBrowser = QTextBrowser()
-        self.video_table : QTableWidget = QTableWidget(len(parse_result[0]), 5)
+        self.video_title: str = parse_result[-2]
+        self.notifier: SignalEmitter = notifier
+        self.main_layout: QVBoxLayout = QVBoxLayout(self)
+        self.top_area_layout: QHBoxLayout = QHBoxLayout()
+        self.webEngineView: QWebEngineView = QWebEngineView()
+        self.right_panel_layout: QVBoxLayout = QVBoxLayout()
+        self.description_browser: QTextBrowser = QTextBrowser()
+        self.video_table: QTableWidget = QTableWidget(len(parse_result[0]), 5)
         self.initialize(parse_result)
 
-    def initialize(self, parse_result : tuple) -> None:
+    def initialize(self, parse_result: tuple) -> None:
         self._initialize_window()
         self._initialize_parse_result(parse_result)
         self._initialize_video_table(parse_result)
         self._initialize_main_layout()
 
-    def _initialize_parse_result(self, parse_result : tuple) -> None:
+    def _initialize_parse_result(self, parse_result: tuple) -> None:
         self.webEngineView.setUrl(QUrl(parse_result[-1]))
         self.top_area_layout.addWidget(self.webEngineView)
-        self.title_label : QLabel = QLabel(parse_result[-2])
+        self.title_label: QLabel = QLabel(parse_result[-2])
         self.right_panel_layout.addWidget(self.title_label)
         self.description_browser.setPlainText(parse_result[-3])
         self.right_panel_layout.addWidget(self.description_browser)
@@ -40,27 +50,41 @@ class DownloadDialog(QDialog):
         self.top_area_layout.setStretch(1, 2)
         self.main_layout.addLayout(self.top_area_layout)
 
-    def _initialize_video_table(self, parse_result : tuple) -> None:
-        self.video_table.setHorizontalHeaderLabels(['', self.tr('标题'),self.tr("分辨率"), self.tr('时长'), self.tr('链接')])
-        self.video_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+    def _initialize_video_table(self, parse_result: tuple) -> None:
+        self.video_table.setHorizontalHeaderLabels(
+            ["", self.tr("标题"), self.tr("分辨率"), self.tr("时长"), self.tr("链接")]
+        )
+        self.video_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         for row in range(len(parse_result[0])):
             self.video_table.setCellWidget(row, 0, QCheckBox())
-            self.video_table.setCellWidget(row, 1, QLabel(parse_result[0][row].get('title')))
+            self.video_table.setCellWidget(
+                row, 1, QLabel(parse_result[0][row].get("title"))
+            )
             combo_box = QComboBox()
-            resolution = [i.get('resolution') for i in parse_result[0][row].get("formats") if i.get('resolution') != 'audio only']
+            resolution = [
+                i.get("resolution")
+                for i in parse_result[0][row].get("formats")
+                if i.get("resolution") != "audio only"
+            ]
             resolution = list(dict.fromkeys(resolution))
             resolution.reverse()
             combo_box.addItems(resolution)
             self.video_table.setCellWidget(row, 2, combo_box)
-            self.video_table.setCellWidget(row, 3, QLabel(parse_result[0][row].get('duration_string')))
-            self.video_table.setCellWidget(row, 4, QLabel(parse_result[0][row].get('webpage_url')))
+            self.video_table.setCellWidget(
+                row, 3, QLabel(parse_result[0][row].get("duration_string"))
+            )
+            self.video_table.setCellWidget(
+                row, 4, QLabel(parse_result[0][row].get("webpage_url"))
+            )
         self.main_layout.addWidget(self.video_table)
 
     def _initialize_main_layout(self) -> None:
-        hbox : QHBoxLayout = QHBoxLayout()
+        hbox: QHBoxLayout = QHBoxLayout()
         hbox.addStretch()
-        self.apply_button : QPushButton = QPushButton(self.tr("下载"))
-        self.cancel_button : QPushButton = QPushButton(self.tr("取消"))
+        self.apply_button: QPushButton = QPushButton(self.tr("下载"))
+        self.cancel_button: QPushButton = QPushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.close)
         self.apply_button.clicked.connect(self.download)
         hbox.addWidget(self.apply_button)
@@ -93,4 +117,3 @@ class DownloadDialog(QDialog):
         }
         self.notifier.download_start.emit(title, urls, resolution)
         self.close()
-

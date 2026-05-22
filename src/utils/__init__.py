@@ -1,13 +1,14 @@
 """
 声明utils为包，并简化导入
 """
+
 __all__ = [
     "center_ui",
     "check_update",
     "set_window_size",
     "text_to_list",
-    "is_url" ,
-    "get_config_dir"
+    "is_url",
+    "get_config_dir",
 ]
 
 from src.utils.centered_ui import center_ui

@@ -1,3 +1,7 @@
+"""
+链接验证模块
+"""
+
 from urllib.parse import urlparse, ParseResult
 
 
