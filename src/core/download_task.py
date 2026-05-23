@@ -55,18 +55,12 @@ class DownloadTask:
                 self.resolution,
             )
         except Exception as e:
-            try:
-                self.logger.error(f"Unexpected error in DownloadTask.run: {e}")
-            except Exception:
-                pass
+            self.logger.error(f"Unexpected error in DownloadTask.run: {e}")
             success = False
 
         if self._finished_cb:
             try:
                 self._finished_cb()
             except Exception as e:
-                try:
-                    self.logger.error(f"Exception in finished_callback: {e}")
-                except Exception:
-                    pass
+                self.logger.error(f"Exception in finished_callback: {e}")
         return success

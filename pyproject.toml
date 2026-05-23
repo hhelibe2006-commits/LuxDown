@@ -6,6 +6,7 @@ dependencies = [
     "astroid>=4.1.2",
     "certifi==2026.5.20",
     "idna==3.16",
+    "logging",
     "nuitka==4.1.1",
     "packaging>=26.2",
     "pip-audit>=2.10.0",

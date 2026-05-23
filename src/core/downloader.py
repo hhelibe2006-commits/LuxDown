@@ -36,10 +36,7 @@ def download(
     if "format" not in ydl_opts and not (
         settings.download_audio or settings.download_video
     ):
-        try:
-            logger.error("no download format enabled in settings")
-        except Exception:
-            pass
+        logger.error("no download format enabled in settings")
         return False
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
@@ -47,15 +44,9 @@ def download(
             ydl.download([url])
         except DownloadCancelled:
             # 用户取消下载
-            try:
-                logger.info("download cancelled by user")
-            except Exception:
-                pass
+            logger.info("download cancelled by user")
             return False
         except Exception as exc:  # 捕获并记录其他异常，返回 False
-            try:
-                logger.error(f"download failed: {exc}")
-            except Exception:
-                pass
+            logger.error(f"download failed: {exc}")
             return False
     return True

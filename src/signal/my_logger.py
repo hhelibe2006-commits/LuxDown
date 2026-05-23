@@ -1,5 +1,4 @@
 import logging
-from logging import Logger
 
 from PySide6.QtCore import QObject, Signal
 
@@ -9,9 +8,9 @@ class Logger(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self._logger: Logger = logging.getLogger("LuxDown")
+        self._logger: logging.Logger = logging.getLogger("LuxDown")
 
-    def debug(self, msg) -> None:
+    def debug(self, msg: str) -> None:
         try:
             self._logger.debug(msg)
         finally:
