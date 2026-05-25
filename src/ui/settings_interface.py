@@ -124,11 +124,11 @@ class SettingsInterface(QDialog):
     @Slot()
     def _on_apply_button(self) -> None:
         dict_settings: dict = {
-            "path_input": self.path_input.text(),
-            "audio": self.audio_combobox.currentText(),
-            "video": self.video_combobox.currentText(),
-            "on_audio": self.audio_box.isChecked(),
-            "on_video": self.video_box.isChecked(),
+            "download_dir": self.path_input.text(),
+            "audio_format": self.audio_combobox.currentText(),
+            "video_format": self.video_combobox.currentText(),
+            "enable_audio": self.audio_box.isChecked(),
+            "enable_video": self.video_box.isChecked(),
         }
         revise: SettingsInterface.ReviseSettings = self.ReviseSettings(
             settings_manager.apply_settings, dict_settings

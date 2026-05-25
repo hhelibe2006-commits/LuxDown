@@ -143,6 +143,13 @@ class MainInterface(QMainWindow):
 
     @Slot(tuple)
     def on_parse_finished(self, parsed: tuple) -> None:
+        if not parsed[0]:
+            MessageBox(
+                self,
+                title=self.tr("解析失败"),
+                text=self.tr("解析失败，错误信息: 未获得任何视频信息"),
+            ).exec()
+            return
         download_dialog: DownloadDialog = DownloadDialog(parsed, self.emitter)
         download_dialog.exec()
 
