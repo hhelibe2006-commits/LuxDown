@@ -130,10 +130,11 @@ class SettingsInterface(QDialog):
             "enable_audio": self.audio_box.isChecked(),
             "enable_video": self.video_box.isChecked(),
         }
-        revise: SettingsInterface.ReviseSettings = self.ReviseSettings(
-            settings_manager.apply_settings, dict_settings
-        )
-        QThreadPool.globalInstance().start(revise)
+        settings_manager.apply_settings(dict_settings)
+        # revise: SettingsInterface.ReviseSettings = self.ReviseSettings(
+        #     settings_manager.apply_settings, dict_settings
+        # )
+        # QThreadPool.globalInstance().start(revise)
         self.close()
 
     class ReviseSettings(QRunnable):
