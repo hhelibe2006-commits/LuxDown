@@ -60,10 +60,9 @@ class DownloadTaskWidget(QWidget):
         if status == "downloading":
             # yt-dlp 可能把百分比放在 '_percent' 或 'percent'，并且可能是字符串
             percent = d.get("_percent") or d.get("percent")
-            if isinstance(percent, (int, float, str)):
+            if isinstance(percent, float):
                 try:
-                    # 转为整数显示（先转为字符串以满足静态类型检查）
-                    self.emitter.progress_update.emit(int(float(str(percent))))
+                    self.emitter.progress_update.emit(percent)
                 except (TypeError, ValueError):
                     # 忽略无法解析的百分比
                     pass

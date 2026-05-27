@@ -3,8 +3,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenuBar, QMainWindow, QMenu, QFileDialog, QMessageBox
 
 from src.information import settings_manager
-from src.widgets.message_box import MessageBox
 from src.ui.settings_interface import SettingsInterface
+from src.widgets.message_box import MessageBox
 
 
 class MenuBar(QMenuBar):

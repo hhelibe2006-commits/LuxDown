@@ -4,7 +4,7 @@
 
 from typing import Callable
 
-from PySide6.QtCore import Slot, QRunnable, QThreadPool
+from PySide6.QtCore import Slot, QRunnable
 from PySide6.QtWidgets import (
     QDialog,
     QLabel,
