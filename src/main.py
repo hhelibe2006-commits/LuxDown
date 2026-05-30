@@ -1,7 +1,6 @@
 """
 主函数入口模块
 """
-
 import sys
 
 from PySide6.QtGui import QIcon
@@ -10,7 +9,6 @@ from qt_material import apply_stylesheet
 
 from src.ui import MainInterface
 from src.utils.locale import load_translations
-
 
 def main() -> None:
     """

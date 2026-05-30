@@ -21,7 +21,6 @@ def extract_info(
         "logger": logger,
         "max_sleep_interval": 30,
         "cookiefile": cookies_file,
-        'impersonate': 'chrome',
     }
     if platform.system() == "Windows":
         ydl_opts["deno_path"] = os.path.join("deno", "deno.exe")

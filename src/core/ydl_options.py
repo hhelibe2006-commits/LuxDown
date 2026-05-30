@@ -28,7 +28,6 @@ def build_ydl_opts(
         "fragment_retries": 3,
         "cookiefile": settings.cookies_file,
         "format_sort": [f"res:{resolution.split('x')[-1]}"],
-        'impersonate': 'chrome',
     }
 
     if settings.download_audio and settings.download_video:
